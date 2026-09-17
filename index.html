@@ -273,7 +273,7 @@
           <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 8px;">
             <circle cx="12" cy="13" r="8"></circle><polyline points="12 9 12 13 14 15"></polyline><path d="M5 3 2 6"></path><path d="M19 3l3 3"></path>
           </svg>
-          <small id="alarm-text">OFF</small>
+          <small id="alarm-text">Inactivo</small>
         </div>
         
         <!-- 2. TEMPORIZADOR -->
@@ -281,7 +281,7 @@
           <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 8px;">
             <circle cx="12" cy="14" r="8"></circle><polyline points="12 10 12 14 15 14"></polyline><line x1="10" y1="2" x2="14" y2="2"></line><line x1="12" y1="2" x2="12" y2="6"></line>
           </svg>
-          <small id="timer-text">OFF</small>
+          <small id="timer-text">Inactivo</small>
         </div>
 
         <!-- 3. CRONÓMETRO (AMPLIADO Y SIN TEXTOS EXTRA) -->
@@ -472,7 +472,7 @@
       
       document.getElementById('picker-btn-cancel').onclick = function() { pickerOverlay.style.display = 'none'; };
       btnDisable.onclick = function() {
-         pickerOverlay.style.display = 'none'; alarmTime = null; alarmText.innerHTML = "Inactiva"; btnAlarm.className = "action-card";
+         pickerOverlay.style.display = 'none'; alarmTime = null; alarmText.innerHTML = "Inactivo"; btnAlarm.className = "action-card";
       };
     });
 
