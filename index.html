@@ -73,7 +73,7 @@
     .actions-grid {
       display: -webkit-flex; display: flex;
       -webkit-justify-content: space-between; justify-content: space-between;
-      margin-top: 24px; height: 170px;
+      margin-top: 24px; height: 196px; /* +15% from 170px */
     }
     .action-card {
       width: 31.5%; background: #231f2c; border-radius: 16px;
@@ -87,9 +87,9 @@
       padding: 5px;
     }
     .action-card span  { font-size: 13px; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
-    .action-card small { font-size: 11px; color: #8e889a; margin-top: 4px; font-weight: bold; }
-    #alarm-text  { color: #38bdf8; font-size: 20px; font-weight: bold; }
-    #timer-text  { color: #38bdf8; font-size: 20px; font-weight: bold; }
+    .action-card small { font-size: 12.5px; color: #8e889a; margin-top: 4px; font-weight: bold; }
+    #alarm-text  { color: #38bdf8; font-size: 23px; font-weight: bold; }
+    #timer-text  { color: #38bdf8; font-size: 23px; font-weight: bold; }
 
     /* Columna Derecha */
     .right-column {
@@ -443,7 +443,7 @@
       .digit { font-size: 86px; }
       .static-top, .flip-top { line-height: 210px; }
       .clock-dots { font-size: 44px; }
-      .actions-grid { height: 150px; margin-top: 18px; }
+      .actions-grid { height: 172px; margin-top: 18px; } /* +15% from 150px */
       .day { font-size: 21px; }
       .day-inner { width: 36px; height: 36px; border-radius: 10px; }
       .month-label { font-size: 21px; }
@@ -466,7 +466,7 @@
       }
       .left-column { width: 100%; height: auto; margin-right: 0; margin-bottom: 18px; }
       .right-column { width: 100%; height: auto; }
-      .gallery-container { min-height: 300px; -webkit-flex: none; flex: none; }
+      .gallery-container { min-height: 200px; -webkit-flex: none; flex: none; }
       .clock-container { height: auto; min-height: 240px; margin-bottom: 18px; }
       .calendar-container { min-height: 400px; }
       .fs-flip-card {
@@ -505,8 +505,8 @@
       .month-label { font-size: 18px; }
       .calendar-weekdays span { font-size: 13px; }
       .calendar-container { padding: 10px 12px; }
-      #btn-stopwatch > div { width: 110px !important; height: 110px !important; }
-      #stopwatch-text { font-size: 20px !important; }
+      #btn-stopwatch > div { width: 126px !important; height: 126px !important; } /* +15% from 110px */
+      #stopwatch-text { font-size: 23px !important; } /* +15% from 20px */
     }
 
     /* =========================================
@@ -526,9 +526,9 @@
       .day-inner { width: 3.8vw; height: 3.8vw; min-width: 28px; min-height: 28px; border-radius: 10px; }
       .month-label { font-size: 2.6vw; }
       .calendar-weekdays span { font-size: 2vw; }
-      .actions-grid { height: 20vh; margin-top: 16px; }
-      #stopwatch-text { font-size: 2.4vw !important; }
-      #btn-stopwatch > div { width: 15vh !important; height: 15vh !important; }
+      .actions-grid { height: 23vh; margin-top: 16px; } /* +15% from 20vh */
+      #stopwatch-text { font-size: 2.8vw !important; } /* +15% from 2.4vw */
+      #btn-stopwatch > div { width: 17.5vh !important; height: 17.5vh !important; } /* +15% from 15vh */
     }
 
     /* S24 Ultra / flagship en portrait: pantalla alta y angosta en CSS pixels */
@@ -651,21 +651,21 @@
       <div class="actions-grid">
         <!-- 1. ALARMA -->
         <div class="action-card" id="btn-alarm">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;">
+          <svg width="92" height="92" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;">
             <circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 14 15"/><path d="M5 3 2 6"/><path d="M19 3l3 3"/>
           </svg>
           <small id="alarm-text">Inactivo</small>
         </div>
         <!-- 2. TEMPORIZADOR -->
         <div class="action-card" id="btn-timer">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;">
+          <svg width="92" height="92" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;">
             <circle cx="12" cy="14" r="8"/><polyline points="12 10 12 14 15 14"/><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="2" x2="12" y2="6"/>
           </svg>
           <small id="timer-text">Inactivo</small>
         </div>
         <!-- 3. CRONÓMETRO -->
         <div class="action-card" id="btn-stopwatch">
-          <div style="position:relative;width:150px;height:150px;">
+          <div style="position:relative;width:172px;height:172px;">
             <svg viewBox="0 0 100 100" style="width:100%;height:100%;display:block;">
               <circle cx="50" cy="50" r="48" fill="#1e1a26" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
               <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="1 3.398"/>
@@ -676,7 +676,7 @@
                 <circle cx="50" cy="50" r="3" fill="#6366f1"/>
               </g>
             </svg>
-            <div id="stopwatch-text" style="position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:28px;font-weight:bold;color:#f5f3f7;letter-spacing:1px;">00:00.00</div>
+            <div id="stopwatch-text" style="position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:32px;font-weight:bold;color:#f5f3f7;letter-spacing:1px;">00:00.00</div>
           </div>
         </div>
       </div>
