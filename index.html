@@ -3,651 +3,564 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Android Flip Clock Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <title>Android Flip Clock Dashboard (SVG Icons)</title>
   
   <style>
-    :root {
-      --bg-chassis: #0e0d11;
-      --bg-panel: #18151f;
-      --card-bg: #231f2c;
-      --card-highlight: #2f2a3a;
-      --text-main: #f5f3f7;
-      --text-dim: #8e889a;
-      --accent-teal: #22c55e;
-      --accent-alarm: #38bdf8;
-      --flip-bg: #2a2536;
-      --flip-text: #f3eee3;
-      --radius-screen: 36px;
-      --radius-lg: 24px;
-      --radius-md: 16px;
-      --radius-sm: 10px;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
+    html, body { width: 100%; height: 100%; background-color: #18151f; font-family: 'Roboto', sans-serif; color: #f5f3f7; overflow: hidden; }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-    }
+    .tablet-screen { position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: #18151f; display: flex; display: -webkit-flex; flex-direction: row; -webkit-flex-direction: row; padding: 32px; }
 
-    body {
-      background-color: #070609;
-      font-family: 'Outfit', sans-serif;
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+    /* Columna Izquierda */
+    .left-column { width: 40%; height: 100%; margin-right: 32px; display: flex; display: -webkit-flex; flex-direction: column; -webkit-flex-direction: column; }
 
-    .tablet-screen {
-      width: 1060px;
-      height: 640px;
-      background: var(--bg-panel);
-      border-radius: var(--radius-screen);
-      display: grid;
-      grid-template-columns: 360px 1fr;
-      gap: 22px;
-      padding: 28px 24px 22px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-      position: relative;
-    }
+    .gallery-container { flex: 1; -webkit-flex: 1; border-radius: 24px; background: #111; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45); -webkit-transform: translateZ(0); transform: translateZ(0); -webkit-mask-image: -webkit-radial-gradient(white, black); cursor: pointer; }
+    .gallery-slide { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0; -webkit-transform: scale(1.04); transform: scale(1.04); -webkit-transition: opacity 1.2s, -webkit-transform 1.5s; transition: opacity 1.2s, transform 1.5s; border-radius: 24px; overflow: hidden; }
+    .gallery-slide.active { opacity: 1; -webkit-transform: scale(1); transform: scale(1); }
+    .gallery-slide img { width: 100%; height: 100%; object-fit: cover; border-radius: 24px; }
 
-    .status-bar {
-      position: absolute;
-      top: 10px;
-      left: 32px;
-      right: 32px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-dim);
-    }
+    .gallery-overlay { position: absolute; bottom: 0; left: 0; right: 0; top: 0; background: linear-gradient(180deg, transparent 50%, rgba(14, 13, 17, 0.85) 100%); display: flex; display: -webkit-flex; align-items: flex-end; -webkit-align-items: flex-end; padding: 20px 24px; justify-content: space-between; -webkit-justify-content: space-between; border-radius: 0 0 24px 24px; }
+    .gallery-caption h4 { font-size: 18px; font-weight: 600; margin: 0; }
+    .gallery-caption p { font-size: 14px; color: #8e889a; margin: 0; }
 
-    .status-bar .icons {
-      display: flex;
-      gap: 12px;
-    }
-
-    /* ===================================================
-       PANEL IZQUIERDO: Galería + Alarma/Temporizador
-       =================================================== */
-    .left-column {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      height: 100%;
-    }
-
-    .gallery-container {
-      flex: 1;
-      border-radius: var(--radius-lg);
-      background: var(--card-bg);
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-    }
-
-    .gallery-slide {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      transform: scale(1.04);
-      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.5s ease-out;
-    }
-
-    .gallery-slide.active {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    .gallery-slide img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .gallery-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, transparent 50%, rgba(14, 13, 17, 0.85) 100%);
-      display: flex;
-      align-items: flex-end;
-      padding: 16px 20px;
-      justify-content: space-between;
-    }
-
-    .gallery-caption h4 {
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .gallery-caption p {
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    .gallery-dots {
-      display: flex;
-      gap: 6px;
-    }
-
-    .gallery-dots span {
-      width: 6px;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      transition: all 0.3s;
-    }
-
-    .gallery-dots span.active {
-      width: 18px;
-      border-radius: 6px;
-      background: var(--text-main);
-    }
-
-    .actions-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      height: 105px;
-    }
-
-    .action-card {
-      background: var(--card-bg);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.15s, border-color 0.2s;
-    }
-
-    .action-card:hover {
-      background: var(--card-highlight);
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.15);
-    }
-
-    .action-card:active {
-      transform: scale(0.97);
-    }
-
-    .action-card i {
-      font-size: 26px;
-      color: var(--accent-alarm);
-    }
-
-    .action-card.timer i {
-      color: #a78bfa;
-    }
-
-    .action-card span {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    .action-card small {
-      font-size: 10px;
-      color: var(--text-dim);
-      margin-top: -4px;
-    }
-
-    /* ===================================================
-       PANEL DERECHO: Reloj Flip 40% + Calendario Compacto
-       =================================================== */
-    .right-column {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      height: 100%;
-    }
-
-    .clock-container {
-      height: 40%;
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-      display: flex;
-      align-items: center;
-      justify-content: space-evenly;
-      padding: 16px 20px;
-    }
-
-    .flip-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      width: 175px;
-      height: 100%;
-    }
-
-    /* ESTRUCTURA FLIP 3D CORREGIDA (Clip-Path) */
-    .flip-card {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      perspective: 1000px;
-      border-radius: var(--radius-md);
-      box-shadow: 0 14px 28px rgba(0,0,0,0.6);
-      background: #191621;
-    }
-
-    .flip-card::before, .flip-card::after {
-      content: '';
-      position: absolute;
-      width: 6px;
-      height: 18px;
-      background: #474052;
-      border-radius: 2px;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 15;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    }
-    .flip-card::before { left: -3px; }
-    .flip-card::after { right: -3px; }
-
-    .hinge-line {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 50%;
-      height: 2px;
-      background: #0f0d14;
-      z-index: 12;
-      transform: translateY(-50%);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.08);
-    }
-
-    /* Las capas del dígito ocupan el 100% del alto, pero se recortan visualmente */
-    .digit {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 86px;
-      font-weight: 700;
-      color: var(--flip-text);
-      background: linear-gradient(180deg, #322d3f 0%, #1c1824 100%);
-      border-radius: var(--radius-md);
-      backface-visibility: hidden;
-      transform-style: preserve-3d;
-    }
-
-    /* clip-path: inset(Arriba Derecha Abajo Izquierda) */
-    .static-top, .flip-top { clip-path: inset(0 0 50% 0); }
-    .static-bot, .flip-bot { clip-path: inset(50% 0 0 0); }
-
-    .static-top { z-index: 1; }
-    .static-bot { z-index: 1; }
+    /* Malla de Acciones Modificada (3 Columnas) */
+    .actions-grid { display: flex; display: -webkit-flex; justify-content: space-between; -webkit-justify-content: space-between; margin-top: 24px; height: 170px; }
+    .action-card { width: 31.5%; background: #231f2c; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.06); display: flex; display: -webkit-flex; flex-direction: column; -webkit-flex-direction: column; align-items: center; -webkit-align-items: center; justify-content: center; -webkit-justify-content: center; cursor: pointer; -webkit-transition: background-color 0.3s; transition: background-color 0.3s; padding: 5px;}
+    .action-card span { font-size: 13px; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
+    .action-card small { font-size: 11px; color: #8e889a; margin-top: 4px; font-weight: bold; }
     
-    .flip-top { 
-      z-index: 2; 
-      transform-origin: center; 
-    }
+    #alarm-text { color: #38bdf8; font-size: 20px; font-weight: bold; }
+    #timer-text { color: #38bdf8; font-size: 20px; font-weight: bold; }
     
-    .flip-bot { 
-      z-index: 2; 
-      transform-origin: center; 
-      transform: rotateX(90deg); /* Empieza oculto doblado hacia adelante */
-    }
+    /* Columna Derecha */
+    .right-column { flex: 1; -webkit-flex: 1; height: 100%; display: flex; display: -webkit-flex; flex-direction: column; -webkit-flex-direction: column; }
 
-    /* Animaciones */
-    .flipping .flip-top {
-      animation: flipTopAnim 0.25s ease-in forwards;
-    }
-    .flipping .flip-bot {
-      animation: flipBotAnim 0.25s ease-out 0.25s forwards;
-    }
+    .clock-container { height: 45%; background: #231f2c; border-radius: 24px; display: flex; display: -webkit-flex; align-items: center; -webkit-align-items: center; justify-content: space-evenly; -webkit-justify-content: space-evenly; padding: 20px 10px; margin-bottom: 24px; }
+    .flip-group { display: flex; display: -webkit-flex; flex-direction: column; -webkit-flex-direction: column; align-items: center; -webkit-align-items: center; width: 31%; }
+    .flip-card { position: relative; width: 100%; height: 260px; -webkit-perspective: 1000px; perspective: 1000px; border-radius: 16px; background: #191621; margin-bottom: 12px; }
+    .hinge-line { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: #1d1d1d; z-index: 12; margin-top: -1px; }
+    
+    .digit { position: absolute; left: 0; right: 0; height: 50%; overflow: hidden; text-align: center; font-family: monospace; font-size: 110px; font-weight: 700; color: #f3eee3; background: #322d3f; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+    .static-top, .flip-top { top: 0; border-radius: 16px 16px 0 0; -webkit-transform-origin: bottom; transform-origin: bottom; line-height: 260px; z-index: 1; }
+    .static-bot, .flip-bot { bottom: 0; border-radius: 0 0 16px 16px; -webkit-transform-origin: top; transform-origin: top; line-height: 0px; z-index: 1; }
+    .flip-top { z-index: 2; }
+    .flip-bot { z-index: 2; -webkit-transform: rotateX(90deg); transform: rotateX(90deg); }
 
-    @keyframes flipTopAnim {
-      0% { transform: rotateX(0deg); filter: brightness(1); }
-      100% { transform: rotateX(-90deg); filter: brightness(0.5); }
-    }
-    @keyframes flipBotAnim {
-      0% { transform: rotateX(90deg); filter: brightness(1.5); }
-      100% { transform: rotateX(0deg); filter: brightness(1); }
-    }
+    .flipping .flip-top { -webkit-animation: flipTopAnim 0.25s ease-in forwards; animation: flipTopAnim 0.25s ease-in forwards; }
+    .flipping .flip-bot { -webkit-animation: flipBotAnim 0.25s ease-out 0.25s forwards; animation: flipBotAnim 0.25s ease-out 0.25s forwards; }
+    @-webkit-keyframes flipTopAnim { 0% { -webkit-transform: rotateX(0deg); } 100% { -webkit-transform: rotateX(-90deg); } }
+    @keyframes flipTopAnim { 0% { transform: rotateX(0deg); } 100% { transform: rotateX(-90deg); } }
+    @-webkit-keyframes flipBotAnim { 0% { -webkit-transform: rotateX(90deg); } 100% { -webkit-transform: rotateX(0deg); } }
+    @keyframes flipBotAnim { 0% { transform: rotateX(90deg); } 100% { transform: rotateX(0deg); } }
 
-    .clock-dots {
-      font-size: 42px;
-      font-weight: bold;
-      color: rgba(255, 255, 255, 0.2);
-      margin-top: -10px;
-    }
+    .clock-dots { font-size: 54px; font-weight: bold; color: rgba(255, 255, 255, 0.2); }
 
-    .flip-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 1.5px;
-      color: var(--text-dim);
-      text-transform: uppercase;
-    }
+    /* Calendario */
+    .calendar-container { flex: 1; -webkit-flex: 1; background: #231f2c; border-radius: 24px; padding: 10px 32px; display: flex; display: -webkit-flex; flex-direction: column; -webkit-flex-direction: column; }
+    .calendar-weekdays { display: flex; display: -webkit-flex; width: 100%; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+    .calendar-weekdays span { width: 14.28%; text-align: center; font-size: 18px; font-weight: 700; color: #38bdf8; }
+    .calendar-grid { flex: 1; -webkit-flex: 1; display: flex; display: -webkit-flex; flex-wrap: wrap; -webkit-flex-wrap: wrap; width: 100%; padding: 10px 0; }
+    .day { width: 14.28%; height: 16.66%; display: flex; display: -webkit-flex; align-items: center; -webkit-align-items: center; justify-content: center; -webkit-justify-content: center; font-size: 26px; font-weight: 500; color: #f5f3f7; }
+    .day.muted { color: rgba(255, 255, 255, 0.15); }
+    .day-inner { width: 44px; height: 44px; display: flex; display: -webkit-flex; align-items: center; -webkit-align-items: center; justify-content: center; -webkit-justify-content: center; border-radius: 12px; }
+    .day.today .day-inner { background: #38bdf8; color: #0c1c28; font-weight: 700; }
+    
+    .calendar-footer { display: flex; display: -webkit-flex; align-items: center; -webkit-align-items: center; justify-content: space-between; -webkit-justify-content: space-between; padding-top: 5px;border-top: 1px solid rgba(255, 255, 255, 0.08); position: relative; }
+    .month-label { flex: 1; -webkit-flex: 1; font-size: 26px; text-transform: uppercase; color: #38bdf8; font-weight: 560; text-align: center; }
+    .nav-btn { cursor: pointer; padding: 0 15px; }
 
-    /* ===================================================
-       CALENDARIO COMPACTO CON MES EN EL BORDE INFERIOR
-       =================================================== */
-    .calendar-container {
-      flex: 1;
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      padding: 14px 22px 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
+    /* Clases de estado */
+    .active-border { border-color: #38bdf8 !important; }
+    .timer-border { border-color: #a78bfa !important; }
+    .alert-bg { background-color: #ef4444 !important; color: white !important; }
+    .alert-bg svg { stroke: white !important; }
 
-    .calendar-weekdays {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      text-align: center;
-      padding-bottom: 6px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    /* --- POPUP RUEDA (WHEEL PICKER) - TEMA OSCURO --- */
+    .picker-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85); z-index: 10000;
+      justify-content: center; align-items: center;
+      -webkit-justify-content: center; -webkit-align-items: center;
     }
-
-    .calendar-weekdays span {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--accent-alarm);
-      letter-spacing: 0.5px;
+    .picker-box {
+      background: #111; border-radius: 12px; width: 85%; max-width: 360px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.8); overflow: hidden; color: #f5f3f7;
     }
-
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      grid-template-rows: repeat(5, 1fr);
-      gap: 4px 6px;
-      flex: 1;
-      align-items: center;
-      padding: 6px 0;
+    .picker-header {
+      padding: 16px; background: #191621; border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-weight: 600; font-size: 18px; text-align: center; position: relative;
     }
-
-    .day {
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13.5px;
-      font-weight: 500;
-      color: var(--text-main);
-      border-radius: var(--radius-sm);
+    .picker-disable-btn {
+      position: absolute; right: 16px; top: 16px; font-size: 14px;
+      color: #ef4444; font-weight: normal; cursor: pointer; display: none;
     }
-
-    .day.muted {
-      color: rgba(255, 255, 255, 0.15);
+    .picker-columns-header {
+      display: flex; display: -webkit-flex; background: #0c0b10;
+      font-size: 12px; color: #8e889a; padding: 12px 0 4px; text-align: center;
     }
-
-    .day.today {
-      background: var(--accent-alarm);
-      color: #0c1c28;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
+    .picker-columns-header div { flex: 1; -webkit-flex: 1; }
+    
+    .picker-content {
+      position: relative; display: flex; display: -webkit-flex; height: 220px;
+      background: #0c0b10;
     }
-
-    .calendar-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 6px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    .picker-selection-bg {
+      position: absolute; top: 88px; left: 0; right: 0; height: 44px;
+      background: transparent; z-index: 1; pointer-events: none;
     }
-
-    .month-label {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .picker-col {
+      flex: 1; -webkit-flex: 1; height: 100%; overflow-y: scroll;
+      -webkit-overflow-scrolling: touch; z-index: 2; text-align: center;
     }
-
-    .month-label i {
-      font-size: 11px;
-      color: var(--accent-alarm);
+    .picker-col::-webkit-scrollbar { display: none; }
+    
+    .picker-item {
+      height: 44px; line-height: 44px; font-size: 24px; font-weight: 600; 
+      color: rgba(255,255,255,0.15); transition: all 0.1s;
     }
-
-    .calendar-nav-buttons {
-      display: flex;
-      gap: 8px;
+    .picker-item.active { color: #f5f3f7; font-size: 32px; font-weight: 700; }
+    
+    .picker-footer {
+      display: flex; display: -webkit-flex; border-top: 1px solid rgba(255,255,255,0.08);
     }
-
-    .nav-btn {
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      font-size: 11px;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 4px;
-      transition: color 0.2s;
+    .picker-footer button {
+      flex: 1; -webkit-flex: 1; background: #191621; border: none; padding: 16px;
+      cursor: pointer; display: flex; display: -webkit-flex;
+      justify-content: center; align-items: center; -webkit-justify-content: center; -webkit-align-items: center;
     }
-
-    .nav-btn:hover {
-      color: var(--text-main);
-    }
+    .picker-footer button:first-child { border-right: 1px solid rgba(255,255,255,0.08); }
+    .picker-footer button svg { width: 30px; height: 30px; stroke: #f5f3f7; }
   </style>
 </head>
 <body>
+  
+  <audio id="alarmAudio" src="alarma.mp3" preload="auto" loop></audio>
+  <input type="file" id="image-picker" multiple accept="image/*" style="display: none;">
 
-  <div class="tablet-screen">
-    <div class="status-bar">
-      <span>01:30</span>
-      <div class="icons">
-        <i class="fa-solid fa-wifi"></i>
-        <i class="fa-solid fa-bell"></i>
-        <i class="fa-solid fa-battery-full"></i>
+  <!-- ESTRUCTURA DEL WHEEL PICKER (OSCURO) -->
+  <div class="picker-overlay" id="picker-overlay">
+    <div class="picker-box">
+      <div class="picker-header">
+        <span id="picker-title">Configurar</span>
+        <span class="picker-disable-btn" id="picker-disable">Apagar</span>
+      </div>
+      <div class="picker-columns-header" id="picker-headers" style="display: none;">
+        <div>Horas</div><div>Minutos</div><div>Segundos</div>
+      </div>
+      <div class="picker-content">
+        <!-- Separadores para el formato 00 : 00 : 00 -->
+        <div id="sep-1" style="position:absolute; left:33.33%; top:88px; height:44px; line-height:40px; font-size:32px; font-weight:bold; color:#f5f3f7; -webkit-transform:translateX(-50%); transform:translateX(-50%); z-index:5; pointer-events:none; display:none;">:</div>
+        <div id="sep-2" style="position:absolute; left:66.66%; top:88px; height:44px; line-height:40px; font-size:32px; font-weight:bold; color:#f5f3f7; -webkit-transform:translateX(-50%); transform:translateX(-50%); z-index:5; pointer-events:none; display:none;">:</div>
+
+        <div class="picker-selection-bg"></div>
+        <div class="picker-col" id="col-1"></div>
+        <div class="picker-col" id="col-2"></div>
+        <div class="picker-col" id="col-3"></div>
+      </div>
+      <div class="picker-footer">
+        <button id="picker-btn-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></button>
+        <button id="picker-btn-cancel"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       </div>
     </div>
+  </div>
 
+  <div class="tablet-screen">
     <!-- COLUMNA IZQUIERDA -->
     <div class="left-column">
-      <div class="gallery-container">
-        <div class="gallery-slide active">
-          <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=700&q=80" alt="Paisaje montañas">
-          <div class="gallery-overlay">
-            <div class="gallery-caption">
-              <h4>Montañas Rocosas</h4>
-              <p>Álbum: Vacaciones</p>
-            </div>
-            <div class="gallery-dots"><span class="active"></span><span></span><span></span></div>
-          </div>
-        </div>
-        <div class="gallery-slide">
-          <img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=700&q=80" alt="Familia">
-          <div class="gallery-overlay">
-            <div class="gallery-caption">
-              <h4>Parque en Familia</h4>
-              <p>Álbum: Recuerdos</p>
-            </div>
-            <div class="gallery-dots"><span></span><span class="active"></span><span></span></div>
-          </div>
-        </div>
-        <div class="gallery-slide">
-          <img src="https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=700&q=80" alt="Ciudad atardecer">
-          <div class="gallery-overlay">
-            <div class="gallery-caption">
-              <h4>Atardecer Dorado</h4>
-              <p>Álbum: Viajes</p>
-            </div>
-            <div class="gallery-dots"><span></span><span></span><span class="active"></span></div>
-          </div>
-        </div>
-      </div>
+      <div class="gallery-container" id="gallery-container"></div>
 
       <div class="actions-grid">
+        <!-- 1. ALARMA -->
         <div class="action-card" id="btn-alarm">
-          <i class="fa-regular fa-clock"></i>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 8px;">
+            <circle cx="12" cy="13" r="8"></circle><polyline points="12 9 12 13 14 15"></polyline><path d="M5 3 2 6"></path><path d="M19 3l3 3"></path>
+          </svg>
           <span>Alarma</span>
-          <small>06:45 AM • Activa</small>
+          <small id="alarm-text">Inactiva</small>
         </div>
-        <div class="action-card timer" id="btn-timer">
-          <i class="fa-solid fa-stopwatch"></i>
-          <span>Temporizador</span>
-          <small>15:00 min</small>
+        
+        <!-- 2. TEMPORIZADOR -->
+        <div class="action-card" id="btn-timer">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 8px;">
+            <circle cx="12" cy="14" r="8"></circle><polyline points="12 10 12 14 15 14"></polyline><line x1="10" y1="2" x2="14" y2="2"></line><line x1="12" y1="2" x2="12" y2="6"></line>
+          </svg>
+          <span>Timer</span>
+          <small id="timer-text">Inactivo</small>
+        </div>
+
+        <!-- 3. CRONÓMETRO (AMPLIADO Y SIN TEXTOS EXTRA) -->
+        <div class="action-card" id="btn-stopwatch">
+          <div style="position: relative; width: 150px; height: 150px;">
+            <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; display: block;">
+               <circle cx="50" cy="50" r="48" fill="#1e1a26" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+               <!-- Ticks pequeños -->
+               <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="1 3.398"/>
+               <!-- Ticks grandes -->
+               <circle cx="50" cy="50" r="42" fill="none" stroke="#f5f3f7" stroke-width="3" stroke-dasharray="1 20.99"/>
+               <!-- Fondo interior -->
+               <circle cx="50" cy="50" r="36" fill="#231f2c"/>
+               <!-- Aguja -->
+               <g id="sw-needle" transform="rotate(0 50 50)">
+                 <line x1="50" y1="50" x2="50" y2="14" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+                 <circle cx="50" cy="50" r="3" fill="#6366f1"/>
+               </g>
+            </svg>
+            <div id="stopwatch-text" style="position: absolute; top: 50%; left: 50%; -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%); font-size: 28px; font-weight: bold; color: #f5f3f7; letter-spacing: 1px;">00:00.00</div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- COLUMNA DERECHA -->
     <div class="right-column">
-      
-      <!-- RELOJ FLIP (Corregido para no duplicar números) -->
       <div class="clock-container">
-        <div class="flip-group">
-          <div class="flip-card" id="card-hours">
-            <div class="hinge-line"></div>
-            <div class="digit static-bot" id="hours-static-bot">01</div>
-            <div class="digit static-top" id="hours-static-top">01</div>
-            <div class="digit flip-bot" id="hours-flip-bot">01</div>
-            <div class="digit flip-top" id="hours-flip-top">01</div>
-          </div>
-          <span class="flip-label">Horas</span>
-        </div>
-
+        <div class="flip-group"><div class="flip-card" id="card-hours"><div class="hinge-line"></div><div class="digit static-bot" id="hours-static-bot">00</div><div class="digit static-top" id="hours-static-top">00</div><div class="digit flip-bot" id="hours-flip-bot">00</div><div class="digit flip-top" id="hours-flip-top">00</div></div></div>
         <span class="clock-dots">:</span>
-
-        <div class="flip-group">
-          <div class="flip-card" id="card-minutes">
-            <div class="hinge-line"></div>
-            <div class="digit static-bot" id="mins-static-bot">30</div>
-            <div class="digit static-top" id="mins-static-top">30</div>
-            <div class="digit flip-bot" id="mins-flip-bot">30</div>
-            <div class="digit flip-top" id="mins-flip-top">30</div>
-          </div>
-          <span class="flip-label">Minutos</span>
-        </div>
-
+        <div class="flip-group"><div class="flip-card" id="card-minutes"><div class="hinge-line"></div><div class="digit static-bot" id="mins-static-bot">00</div><div class="digit static-top" id="mins-static-top">00</div><div class="digit flip-bot" id="mins-flip-bot">00</div><div class="digit flip-top" id="mins-flip-top">00</div></div></div>
         <span class="clock-dots">:</span>
-
-        <div class="flip-group">
-          <div class="flip-card" id="card-seconds">
-            <div class="hinge-line"></div>
-            <div class="digit static-bot" id="secs-static-bot">40</div>
-            <div class="digit static-top" id="secs-static-top">40</div>
-            <div class="digit flip-bot" id="secs-flip-bot">40</div>
-            <div class="digit flip-top" id="secs-flip-top">40</div>
-          </div>
-          <span class="flip-label">Segundos</span>
-        </div>
+        <div class="flip-group"><div class="flip-card" id="card-seconds"><div class="hinge-line"></div><div class="digit static-bot" id="secs-static-bot">00</div><div class="digit static-top" id="secs-static-top">00</div><div class="digit flip-bot" id="secs-flip-bot">00</div><div class="digit flip-top" id="secs-flip-top">00</div></div></div>
       </div>
 
-      <!-- CALENDARIO -->
       <div class="calendar-container">
-        <div class="calendar-weekdays">
-          <span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span>
-        </div>
-        <div class="calendar-grid">
-          <div class="day muted">31</div><div class="day">1</div><div class="day">2</div><div class="day">3</div><div class="day">4</div><div class="day">5</div><div class="day">6</div>
-          <div class="day">7</div><div class="day">8</div><div class="day">9</div><div class="day">10</div><div class="day">11</div><div class="day">12</div><div class="day">13</div>
-          <div class="day">14</div><div class="day">15</div><div class="day today">16</div><div class="day">17</div><div class="day">18</div><div class="day">19</div><div class="day">20</div>
-          <div class="day">21</div><div class="day">22</div><div class="day">23</div><div class="day">24</div><div class="day">25</div><div class="day">26</div><div class="day">27</div>
-          <div class="day">28</div><div class="day">29</div><div class="day">30</div><div class="day muted">1</div><div class="day muted">2</div><div class="day muted">3</div><div class="day muted">4</div>
-        </div>
+        <div class="calendar-weekdays"><span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span></div>
+        <div class="calendar-grid" id="calendar-grid"></div>
         <div class="calendar-footer">
-          <div class="month-label">
-            <i class="fa-regular fa-calendar"></i>
-            <span>Septiembre</span>
-          </div>
-          <div class="calendar-nav-buttons">
-            <button class="nav-btn"><i class="fa-solid fa-chevron-left"></i></button>
-            <button class="nav-btn"><i class="fa-solid fa-chevron-right"></i></button>
-          </div>
+          <div class="month-label" id="month-label"><span>📅 Cargando...</span></div>
+          <div style="font-size: 20px; color: #8e889a;"><span class="nav-btn" id="prev-month">◀</span> <span class="nav-btn" id="next-month">▶</span></div>
         </div>
       </div>
-
     </div>
   </div>
 
   <script>
-    class FlipModule {
-      constructor(cardId, prefix) {
-        this.card = document.getElementById(cardId);
-        this.staticTop = document.getElementById(`${prefix}-static-top`);
-        this.staticBot = document.getElementById(`${prefix}-static-bot`);
-        this.flipTop = document.getElementById(`${prefix}-flip-top`);
-        this.flipBot = document.getElementById(`${prefix}-flip-bot`);
-        this.currentValue = null;
-      }
+    var audioPlayer = document.getElementById('alarmAudio');
 
-      update(nextValue) {
-        if (this.currentValue === null) {
-          this.currentValue = nextValue;
-          this.staticTop.textContent = nextValue;
-          this.staticBot.textContent = nextValue;
-          this.flipTop.textContent = nextValue;
-          this.flipBot.textContent = nextValue;
-          return;
+    // Fulllscreen handling
+    document.body.addEventListener('click', function(e) {
+      var target = e.target;
+      var isInteractive = false;
+
+      while (target && target !== document.body) {
+        if (target.className && typeof target.className === 'string') {
+          if (target.className.indexOf('action-card') !== -1 || target.className.indexOf('picker-box') !== -1) {
+             isInteractive = true;
+          }
         }
-
-        if (this.currentValue === nextValue) return;
-
-        const oldValue = this.currentValue;
-        this.currentValue = nextValue;
-
-        // Reiniciar estado
-        this.card.classList.remove('flipping');
-        void this.card.offsetWidth; // Forzar reflow
-
-        // Preparar las capas para la animación de caída:
-        // Top estático ya tiene el NUEVO valor (esperando ser revelado)
-        this.staticTop.textContent = nextValue;
-        // Bottom estático tiene el VIEJO valor (sigue mostrándose hasta ser cubierto)
-        this.staticBot.textContent = oldValue;
-        // Top flip tiene el VIEJO valor (es lo que estamos viendo y va a caer)
-        this.flipTop.textContent = oldValue;
-        // Bot flip tiene el NUEVO valor (es lo que cae y cubre el viejo bottom)
-        this.flipBot.textContent = nextValue;
-
-        // Iniciar animación (toma 0.5s en total)
-        this.card.classList.add('flipping');
+        target = target.parentNode;
       }
+
+      if(e.target.id === 'prev-month' || e.target.id === 'next-month' || isInteractive || e.target.tagName.toLowerCase() === 'input') return;
+      if (audioPlayer.paused && audioPlayer.currentTime === 0) audioPlayer.load();
+
+      var elem = document.documentElement;
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (elem.requestFullscreen) elem.requestFullscreen();
+        else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+      }
+    });
+
+    // --- CLASE PARA CADA COLUMNA DESLIZABLE (WHEEL PICKER) ---
+    function ScrollColumn(id) {
+       this.container = document.getElementById(id);
+       this.itemHeight = 44;
+       this.data = [];
+       this.selectedIndex = 0;
+       this.timeout = null;
+
+       var self = this;
+       this.container.addEventListener('scroll', function() {
+           var st = self.container.scrollTop;
+           var index = Math.round(st / self.itemHeight);
+           
+           if (index < 0) index = 0;
+           if (index >= self.data.length) index = self.data.length - 1;
+
+           if(index !== self.selectedIndex) {
+               self.selectedIndex = index;
+               self.updateActive();
+           }
+
+           clearTimeout(self.timeout);
+           self.timeout = setTimeout(function() {
+               self.container.scrollTop = self.selectedIndex * self.itemHeight;
+           }, 150); 
+       });
     }
 
-    const hoursModule = new FlipModule('card-hours', 'hours');
-    const minsModule = new FlipModule('card-minutes', 'mins');
-    const secsModule = new FlipModule('card-seconds', 'secs');
+    ScrollColumn.prototype.load = function(data, defaultIndex) {
+       this.data = data;
+       var html = '<div style="height: ' + (this.itemHeight * 2) + 'px;"></div>';
+       for(var i=0; i<this.data.length; i++) {
+           html += '<div class="picker-item" id="' + this.container.id + '-item-' + i + '">' + this.data[i] + '</div>';
+       }
+       html += '<div style="height: ' + (this.itemHeight * 2) + 'px;"></div>';
+       this.container.innerHTML = html;
+
+       this.selectedIndex = defaultIndex || 0;
+       var self = this;
+       setTimeout(function() {
+           self.container.scrollTop = self.selectedIndex * self.itemHeight;
+           self.updateActive();
+       }, 50);
+    };
+
+    ScrollColumn.prototype.updateActive = function() {
+       for(var i=0; i<this.data.length; i++) {
+           var el = document.getElementById(this.container.id + '-item-' + i);
+           if(el) el.className = 'picker-item' + (i === this.selectedIndex ? ' active' : '');
+       }
+    };
+
+    ScrollColumn.prototype.getValue = function() { return this.data[this.selectedIndex]; };
+
+    function createArray(start, end, pad) {
+      var arr = [];
+      for(var i = start; i <= end; i++) { arr.push(pad && i < 10 ? '0' + i : i.toString()); }
+      return arr;
+    }
+
+    var col1 = new ScrollColumn('col-1'); var col2 = new ScrollColumn('col-2'); var col3 = new ScrollColumn('col-3');
+    var pickerOverlay = document.getElementById('picker-overlay');
+    var btnDisable = document.getElementById('picker-disable');
+    var pHeaders = document.getElementById('picker-headers');
+    var pSep1 = document.getElementById('sep-1');
+    var pSep2 = document.getElementById('sep-2');
+
+    function padZero(num) { return num.toString().length < 2 ? "0" + num : num; }
+    function convertTo24(h12, min, ampm) {
+       var h = parseInt(h12, 10);
+       if (ampm === 'PM' && h < 12) h += 12;
+       if (ampm === 'AM' && h === 12) h = 0;
+       return padZero(h) + ":" + padZero(parseInt(min, 10));
+    }
+
+    // --- LÓGICA DE ALARMA ---
+    var alarmTime = null; 
+    var isAlarmRinging = false;
+    var btnAlarm = document.getElementById('btn-alarm');
+    var alarmText = document.getElementById('alarm-text');
+    var alarmDisplayStr = "";
+
+    btnAlarm.addEventListener('click', function() {
+      if (isAlarmRinging) {
+        isAlarmRinging = false; audioPlayer.pause(); audioPlayer.currentTime = 0;
+        btnAlarm.className = "action-card active-border"; alarmText.innerHTML = alarmDisplayStr;
+        return;
+      }
+      
+      document.getElementById('picker-title').innerText = "Alarma";
+      pHeaders.style.display = 'none'; // Sin cabeceras para alarma
+      pSep1.style.display = 'block'; pSep2.style.display = 'none'; // Solo un divisor :
+      
+      var defH = 7; var defM = 15; var defA = 1;
+      if (alarmTime) {
+         var parts = alarmTime.split(':'); var h24 = parseInt(parts[0], 10); defM = parseInt(parts[1], 10);
+         if (h24 >= 12) { defA = 1; defH = (h24 === 12 ? 12 : h24 - 12) - 1; } else { defA = 0; defH = (h24 === 0 ? 12 : h24) - 1; }
+         btnDisable.style.display = 'block';
+      } else { btnDisable.style.display = 'none'; }
+
+      col1.load(createArray(1, 12, false), defH);
+      col2.load(createArray(0, 59, true), defM); 
+      col3.load(['AM', 'PM'], defA);
+      
+      pickerOverlay.style.display = '-webkit-flex'; pickerOverlay.style.display = 'flex';
+
+      document.getElementById('picker-btn-ok').onclick = function() {
+         pickerOverlay.style.display = 'none';
+         var h12 = col1.getValue(); var min = col2.getValue(); var ampm = col3.getValue();
+         alarmTime = convertTo24(h12, min, ampm);
+         alarmDisplayStr = h12 + ":" + min + " " + ampm;
+         alarmText.innerHTML = alarmDisplayStr;
+         btnAlarm.className = "action-card active-border";
+      };
+      
+      document.getElementById('picker-btn-cancel').onclick = function() { pickerOverlay.style.display = 'none'; };
+      btnDisable.onclick = function() {
+         pickerOverlay.style.display = 'none'; alarmTime = null; alarmText.innerHTML = "Inactiva"; btnAlarm.className = "action-card";
+      };
+    });
+
+    // --- LÓGICA DEL TEMPORIZADOR ---
+    var timerInterval = null; var timerSeconds = 0; var isTimerRinging = false;
+    var btnTimer = document.getElementById('btn-timer'); var timerText = document.getElementById('timer-text');
+
+    btnTimer.addEventListener('click', function() {
+      if (isTimerRinging) {
+        isTimerRinging = false; audioPlayer.pause(); audioPlayer.currentTime = 0;
+        btnTimer.className = "action-card"; timerText.innerHTML = "Inactivo";
+        return;
+      }
+      if (timerInterval) {
+        clearInterval(timerInterval); timerInterval = null;
+        btnTimer.className = "action-card"; timerText.innerHTML = "Inactivo";
+        return;
+      }
+
+      document.getElementById('picker-title').innerText = "Temporizador";
+      btnDisable.style.display = 'none';
+      pHeaders.style.display = '-webkit-flex'; pHeaders.style.display = 'flex';
+      pSep1.style.display = 'block'; pSep2.style.display = 'block';
+
+      col1.load(createArray(0, 23, true), 0); col2.load(createArray(0, 59, true), 15); col3.load(createArray(0, 59, true), 0); 
+
+      pickerOverlay.style.display = '-webkit-flex'; pickerOverlay.style.display = 'flex';
+
+      document.getElementById('picker-btn-ok').onclick = function() {
+         pickerOverlay.style.display = 'none';
+         var h = parseInt(col1.getValue(), 10); var m = parseInt(col2.getValue(), 10); var s = parseInt(col3.getValue(), 10);
+         timerSeconds = (h * 3600) + (m * 60) + s;
+         
+         if (timerSeconds > 0) {
+           btnTimer.className = "action-card timer-border"; updateTimerText();
+           timerInterval = setInterval(function() {
+             timerSeconds--; updateTimerText();
+             if (timerSeconds <= 0) {
+               clearInterval(timerInterval); timerInterval = null; isTimerRinging = true;
+               btnTimer.className = "action-card alert-bg"; timerText.innerHTML = "¡TIEMPO!"; audioPlayer.play();
+             }
+           }, 1000);
+         }
+      };
+      document.getElementById('picker-btn-cancel').onclick = function() { pickerOverlay.style.display = 'none'; };
+    });
+
+    function updateTimerText() {
+      var h = Math.floor(timerSeconds / 3600); var m = Math.floor((timerSeconds % 3600) / 60); var s = timerSeconds % 60;
+      if (h > 0) { timerText.innerHTML = padZero(h) + ":" + padZero(m) + ":" + padZero(s); } 
+      else { timerText.innerHTML = padZero(m) + ":" + padZero(s); }
+    }
+
+    // --- LÓGICA DEL CRONÓMETRO ---
+    var swInterval = null; var swStartTime = 0; var swElapsed = 0; var isSwRunning = false;
+    var btnStopwatch = document.getElementById('btn-stopwatch');
+    var swText = document.getElementById('stopwatch-text');
+    var swNeedle = document.getElementById('sw-needle');
+    var swClickCount = 0; var swClickTimer = null;
+
+    btnStopwatch.addEventListener('click', function() {
+        swClickCount++;
+        if (swClickCount === 1) {
+            swClickTimer = setTimeout(function() {
+                // Click Sencillo: Iniciar / Pausar
+                if (isSwRunning) {
+                    isSwRunning = false; clearInterval(swInterval);
+                    btnStopwatch.className = "action-card active-border"; // Borde para indicar pausa
+                } else {
+                    isSwRunning = true; swStartTime = Date.now() - swElapsed;
+                    swInterval = setInterval(updateStopwatch, 20); // 50fps
+                    btnStopwatch.className = "action-card timer-border"; // Borde activo corriendo
+                }
+                swClickCount = 0;
+            }, 250);
+        } else if (swClickCount === 2) {
+            // Doble Clic: Reiniciar
+            clearTimeout(swClickTimer); swClickCount = 0;
+            isSwRunning = false; clearInterval(swInterval); swElapsed = 0;
+            swText.innerHTML = "00:00.00";
+            swNeedle.setAttribute('transform', 'rotate(0 50 50)');
+            btnStopwatch.className = "action-card";
+        }
+    });
+
+    function updateStopwatch() {
+        swElapsed = Date.now() - swStartTime;
+        var date = new Date(swElapsed);
+        var m = padZero(date.getUTCMinutes()); var s = padZero(date.getUTCSeconds());
+        var msStr = padZero(Math.floor(date.getUTCMilliseconds() / 10)); 
+        swText.innerHTML = m + ":" + s + "." + msStr;
+        var deg = (swElapsed / 60000) * 360; 
+        swNeedle.setAttribute('transform', 'rotate(' + deg + ' 50 50)');
+    }
+
+    // --- RELOJ FLIP ---
+    function FlipModule(cardId, prefix) {
+      this.card = document.getElementById(cardId); this.staticTop = document.getElementById(prefix + "-static-top");
+      this.staticBot = document.getElementById(prefix + "-static-bot"); this.flipTop = document.getElementById(prefix + "-flip-top");
+      this.flipBot = document.getElementById(prefix + "-flip-bot"); this.currentValue = null;
+    }
+    FlipModule.prototype.update = function(nextValue) {
+      if (this.currentValue === null) {
+        this.currentValue = nextValue; this.staticTop.innerHTML = nextValue; this.staticBot.innerHTML = nextValue;
+        this.flipTop.innerHTML = nextValue; this.flipBot.innerHTML = nextValue; return;
+      }
+      if (this.currentValue === nextValue) return;
+      var oldValue = this.currentValue; this.currentValue = nextValue;
+      this.card.className = "flip-card"; void this.card.offsetWidth; 
+      this.staticTop.innerHTML = nextValue; this.staticBot.innerHTML = oldValue;
+      this.flipTop.innerHTML = oldValue; this.flipBot.innerHTML = nextValue;
+      this.card.className = "flip-card flipping";
+    };
+
+    var hoursModule = new FlipModule('card-hours', 'hours'); var minsModule = new FlipModule('card-minutes', 'mins'); var secsModule = new FlipModule('card-seconds', 'secs');
 
     function tick() {
-      const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      const s = String(now.getSeconds()).padStart(2, '0');
+      var now = new Date(); var h = padZero(now.getHours()); var m = padZero(now.getMinutes()); var s = padZero(now.getSeconds());
+      hoursModule.update(h); minsModule.update(m); secsModule.update(s);
+      if (alarmTime && !isAlarmRinging && alarmTime === (h + ":" + m) && s === "00") {
+        isAlarmRinging = true; btnAlarm.className = "action-card alert-bg";
+        alarmText.innerHTML = "¡DESPIERTA!"; audioPlayer.play();
+      }
+    }
+    setInterval(tick, 1000); tick();
 
-      hoursModule.update(h);
-      minsModule.update(m);
-      secsModule.update(s);
+    // --- GALERÍA CON SELECTOR MANUAL ---
+    var galleryContainer = document.getElementById('gallery-container'); var imagePicker = document.getElementById('image-picker'); var galleryInterval = null;
+    galleryContainer.innerHTML = '<div style="display:flex; display:-webkit-flex; height:100%; align-items:center; -webkit-align-items:center; justify-content:center; -webkit-justify-content:center; color:#8e889a; text-align:center; padding:20px; font-weight:600; font-size:18px;">Toca aquí para seleccionar fotos</div>';
+
+    galleryContainer.addEventListener('click', function(e) { if (document.querySelectorAll('.gallery-slide').length === 0) imagePicker.click(); });
+
+    imagePicker.addEventListener('change', function(e) {
+      var files = e.target.files; if (!files || files.length === 0) return;
+      var galleryHtml = ''; var validImages = 0;
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i]; if (!file.type.match('image.*')) continue;
+        var imgUrl = URL.createObjectURL(file); var activeClass = (validImages === 0) ? ' active' : '';
+        galleryHtml += '<div class="gallery-slide' + activeClass + '"><img src="' + imgUrl + '" alt="Foto"><div class="gallery-overlay"><div class="gallery-caption"><h4>' + file.name + '</h4><p>Cargada localmente</p></div></div></div>';
+        validImages++;
+      }
+      if (validImages > 0) { galleryContainer.innerHTML = galleryHtml; iniciarCarrusel(); }
+    });
+
+    function iniciarCarrusel() {
+      if (galleryInterval) clearInterval(galleryInterval);
+      var slides = document.querySelectorAll('.gallery-slide'); var activeSlideIndex = 0;
+      if (slides.length > 1) {
+        galleryInterval = setInterval(function() {
+          slides[activeSlideIndex].className = 'gallery-slide';
+          activeSlideIndex = (activeSlideIndex + 1) % slides.length;
+          slides[activeSlideIndex].className = 'gallery-slide active';
+        }, 5000);
+      }
     }
 
-    setInterval(tick, 1000);
-    tick();
+    // --- CALENDARIO ---
+    var monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    var currentDate = new Date(); var displayMonth = currentDate.getMonth(); var displayYear = currentDate.getFullYear();
 
-    // Galería
-    const slides = document.querySelectorAll('.gallery-slide');
-    let activeSlideIndex = 0;
-    setInterval(() => {
-      slides[activeSlideIndex].classList.remove('active');
-      activeSlideIndex = (activeSlideIndex + 1) % slides.length;
-      slides[activeSlideIndex].classList.add('active');
-    }, 5000);
+    function renderCalendar(month, year) {
+      document.getElementById('month-label').innerHTML = '<span>📅 ' + monthNames[month] + ' ' + year + '</span>';
+      var firstDay = new Date(year, month, 1).getDay(); var daysInMonth = new Date(year, month + 1, 0).getDate(); var daysInPrevMonth = new Date(year, month, 0).getDate();
+      var html = '';
+      for (var i = 0; i < 42; i++) {
+        var dayNum;
+        if (i < firstDay) { html += '<div class="day muted"><div class="day-inner">' + (daysInPrevMonth - firstDay + i + 1) + '</div></div>'; } 
+        else if (i >= firstDay && i < firstDay + daysInMonth) {
+          dayNum = i - firstDay + 1;
+          var isToday = (dayNum === currentDate.getDate() && month === currentDate.getMonth() && year === currentDate.getFullYear());
+          html += '<div class="day' + (isToday ? ' today' : '') + '"><div class="day-inner">' + dayNum + '</div></div>';
+        } else { html += '<div class="day muted"><div class="day-inner">' + (i - (firstDay + daysInMonth) + 1) + '</div></div>'; }
+      }
+      document.getElementById('calendar-grid').innerHTML = html;
+    }
+
+    document.getElementById('prev-month').addEventListener('click', function() {
+      displayMonth--; if (displayMonth < 0) { displayMonth = 11; displayYear--; } renderCalendar(displayMonth, displayYear);
+    });
+    document.getElementById('next-month').addEventListener('click', function() {
+      displayMonth++; if (displayMonth > 11) { displayMonth = 0; displayYear++; } renderCalendar(displayMonth, displayYear);
+    });
+    renderCalendar(displayMonth, displayYear);
   </script>
 </body>
 </html>
