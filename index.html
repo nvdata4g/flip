@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Android Flip Clock Dashboard</title>
+
+  <style>
+    /* =========================================
+       BASE — Reset y body
+       ========================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; height: 100%; background-color: #18151f; font-family: 'Roboto', sans-serif; color: #f5f3f7; overflow: hidden; }
+
+    /* =========================================
+       LAYOUT PRINCIPAL (Tablet / Desktop)
+       ========================================= */
+    .tablet-screen {
+      position: absolute; top: 0; bottom: 0; left: 0; right: 0;
+      background: #18151f;
+      display: -webkit-flex; display: flex;
+      -webkit-flex-direction: row; flex-direction: row;
+      padding: 32px;
+    }
+
+    /* Columna Izquierda */
+    .left-column {
+      width: 40%; height: 100%; margin-right: 32px;
+      display: -webkit-flex; display: flex;
+      -webkit-flex-direction: column; flex-direction: column;
+    }
+
+    .gallery-container {
+      -webkit-flex: 1; flex: 1;
+      border-radius: 24px; background: #111; position: relative;
+      overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+      -webkit-transform: translateZ(0); transform: translateZ(0);
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+      cursor: pointer;
+    }
+    .gallery-slide {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      opacity: 0;
+      -webkit-transform: scale(1.04); transform: scale(1.04);
+      -webkit-transition: opacity 1.2s, -webkit-transform 1.5s;
+      transition: opacity 1.2s, transform 1.5s;
+      border-radius: 24px; overflow: hidden;
+    }
+    .gallery-slide.active { opacity: 1; -webkit-transform: scale(1); transform: scale(1); }
+    .gallery-slide img { width: 100%; height: 100%; object-fit: cover; border-radius: 24px; }
+    .gallery-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0; top: 0;
+      background: linear-gradient(180deg, transparent 50%, rgba(14,13,17,0.85) 100%);
+      display: -webkit-flex; display: flex;
+      -webkit-align-items: flex-end; align-items: flex-end;
+      padding: 20px 24px;
+      -webkit-justify-content: space-between; justify-content: space-between;
+      border-radius: 0 0 24px 24px;
+    }
+    .gallery-caption h4 { font-size: 18px; font-weight: 600; margin: 0; }
+    .gallery-caption p  { font-size: 14px; color: #8e889a; margin: 0; }
+    .gallery-empty {
+      display: -webkit-flex; display: flex;
+      -webkit-flex-direction: column; flex-direction: column;
+      -webkit-align-items: center; align-items: center;
+      -webkit-justify-content: center; justify-content: center;
+      height: 100%; color: #8e889a; text-align: center; padding: 20px;
+      font-weight: 600; font-size: 18px;
+    }
+    .gallery-empty svg { margin-bottom: 12px; }
+
+    /* Malla de Acciones */
+    .actions-grid {
+      display: -webkit-flex; display: flex;
+      -webkit-justify-content: space-between; justify-content: space-between;
+      margin-top: 24px; height: 170px;
+    }
+    .action-card {
+      width: 31.5%; background: #231f2c; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      display: -webkit-flex; display: flex;
+      -webkit-flex-direction: column; flex-direction: column;
+      -webkit-align-items: center; align-items: center;
+      -webkit-justify-content: center; justify-content: center;
+      cursor: pointer;
+      -webkit-transition: background-color 0.3s; transition: background-color 0.3s;
+      padding: 5px;
+    }
+    .action-card span  { font-size: 13px; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
+    .action-card small { font-size: 11px; color: #8e889a; margin-top: 4px; font-weight: bold; }
+    #alarm-text  { color: #38bdf8; font-size: 20px; font-weight: bold; }
+    #timer-text  { color: #38bdf8; font-size: 20px; font-weight: bold; }
+
+    /* Columna Derecha */
+    .right-column {
+      -webkit-flex: 1; flex: 1; height: 100%;
+      display: -webkit-flex; display: flex;
+      -webkit-flex-direction: column; flex-direction: column;
+    }
+
+    /* Reloj Flip */
+    .clock-container {
+      height: 45%; background: #231f2c; border-radius: 24px;
+      display: -webkit-flex; display: flex;
+      -webkit-align-items: center; align-items: center;
+      -webkit-justify-content: space-evenly; justify-content: space-evenly;
+      padding: 20px 10px; margin-bottom: 24px; cursor: pointer;
+      -webkit-transition: opacity 0.15s; transition: opacity 0.15s;
+    }
+    .clock-container:active { opacity: 0.88; }
+    .flip-group {
+      display: -webkit-flex; display: flex;
+      -webkit-flex-direction: column; flex-direction: column;
+      -webkit-align-items: center; align-items: center;
+      width: 31%;
+    }
+    .flip-card {
+      position: relative; width: 100%; height: 260px;
+      -webkit-perspective: 1000px; perspective: 1000px;
+      border-radius: 16px; background: #191621; margin-bottom: 12px;
+    }
+    .hinge-line { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: #1d1d1d; z-index: 12; margin-top: -1px; }
+    .digit {
+      position: absolute; left: 0; right: 0; height: 50%;
+      overflow: hidden; text-align: center;
+      font-family: monospace; font-size: 110px; font-weight: 700;
+      color: #f3eee3; background: #322d3f;
+      -webkit-backface-visibility: hidden; backface-visibility: hidden;
+    }
+    .static-top, .flip-top { top: 0; border-radius: 16px 16px 0 0; -webkit-transform-origin: bottom; transform-origin: bottom; line-height: 260px; z-index: 1; }
+    .static-bot, .flip-bot { bottom: 0; border-radius: 0 0 16px 16px; -webkit-transform-origin: top; transform-origin: top; line-height: 0px; z-index: 1; }
+    .flip-top { z-index: 2; }
+    .flip-bot { z-index: 2; -webkit-transform: rotateX(90deg); transform: rotateX(90deg); }
+    .flipping .flip-top { -webkit-animation: flipTopAnim 0.25s ease-in forwards; animation: flipTopAnim 0.25s ease-in forwards; }
+    .flipping .flip-bot { -webkit-animation: flipBotAnim 0.25s ease-out 0.25s forwards; animation: flipBotAnim 0.25s ease-out 0.25s forwards; }
+    @-webkit-keyframes flipTopAnim { 0% { -webkit-transform: rotateX(0deg); } 100% { -webkit-transform: rotateX(-90deg); } }
+    @keyframes flipTopAnim { 0% { transform: rotateX(0deg); } 100% { transform: rotateX(-90deg); } }
+    @-webkit-keyframes flipBotAnim { 0% { -webkit-transform: rotateX(90deg); } 100% { -webkit-transform: rotateX(0deg); } }
+    @keyframes flipBotAnim { 0% { transform: rotateX(90deg); } 100% { transform: rotateX(0deg); } }
+    .clock-dots { font-size: 54px; font-weight: bold; color: rgba(255,255,255,0.2); }
+
+    /* Calendario */
+    .calendar-container {
+      -webkit-flex: 1; flex: 1; background: #231f2c; border-radius: 24px;
+      padding: 10px 32px;
+      display: -webkit-flex; display: flex;
+      -webkit-flex-direction: column; flex-direction: column;
+      cursor: pointer;
+      -webkit-transition: opacity 0.15s; transition: opacity 0.15s;
+    }
+    .calendar-container:active { opacity: 0.88; }
+    .calendar-weekdays {
+      display: -webkit-flex; display: flex;
+      width: 100%; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .calendar-weekdays span { width: 14.28%; text-align: center; font-size: 18px; font-weight: 700; color: #38bdf8; }
+    .calendar-grid {
+      -webkit-flex: 1; flex: 1;
+      display: -webkit-flex; display: flex;
+      -webkit-flex-wrap: wrap; flex-wrap: wrap;
+      width: 100%; padding: 10px 0;
+    }
+    .day {
+      width: 14.28%; height: 16.66%;
+      display: -webkit-flex; display: flex;
+      -webkit-align-items: center; align-items: center;
+      -webkit-justify-content: center; justify-content: center;
+      font-size: 26px; font-weight: 500; color: #f5f3f7;
+    }
+    .day.muted { color: rgba(255,255,255,0.15); }
+    .day-inner {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: -webkit-flex; display: flex;
+      -webkit-align-items: center; align-items: center;
+      -webkit-justify-content: center; justify-content: center;
+    }
+    .day.today .day-inner { background: #38bdf8; color: #0c1c28; font-weight: 700; }
+    .calendar-footer {
+      display: -webkit-flex; display: flex;
+      -webkit-align-items: center; align-items: center;
+      -webkit-justify-content: space-between; justify-content: space-between;
+      padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .month-label { -webkit-flex: 1; flex: 1; font-size: 26px; text-transform: uppercase; color: #38bdf8; font-weight: 560; text-align: center; }
+    .nav-btn { cursor: pointer; padding: 0 15px; font-size: 20px; color: #8e889a; }
+
+    /* Estados de tarjetas */
+    .active-border { border-color: #38bdf8 !important; }
+    .timer-border  { border-color: #a78bfa !important; }
+    .alert-bg { background-color: #ef4444 !important; color: white !important; }
+    .alert-bg svg { stroke: white !important; }
+
+    /* =========================================
+       PICKER WHEEL (tema oscuro) — ORIGINAL
+       ========================================= */
+    .picker-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85); z-index: 10000;
+      -webkit-justify-content: center; justify-content: center;
+      -webkit-align-items: center; align-items: center;
+    }
+    .picker-box {
+      background: #111; border-radius: 12px; width: 85%; max-width: 360px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.8); overflow: hidden; color: #f5f3f7;
+    }
+    .picker-header {
+      padding: 16px; background: #191621; border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-weight: 600; font-size: 18px; text-align: center; position: relative;
+    }
+    .picker-disable-btn { position: absolute; right: 16px; top: 16px; font-size: 14px; color: #ef4444; font-weight: normal; cursor: pointer; display: none; }
+    .picker-columns-header {
+      display: -webkit-flex; display: flex; background: #0c0b10;
+      font-size: 12px; color: #8e889a; padding: 12px 0 4px; text-align: center;
+    }
+    .picker-columns-header div { -webkit-flex: 1; flex: 1; }
+    .picker-content { position: relative; display: -webkit-flex; display: flex; height: 220px; background: #0c0b10; }
+    .picker-selection-bg { position: absolute; top: 88px; left: 0; right: 0; height: 44px; background: transparent; z-index: 1; pointer-events: none; }
+    .picker-col { -webkit-flex: 1; flex: 1; height: 100%; overflow-y: scroll; -webkit-overflow-scrolling: touch; z-index: 2; text-align: center; }
+    .picker-col::-webkit-scrollbar { display: none; }
+    .picker-item { height: 44px; line-height: 44px; font-size: 24px; font-weight: 600; color: rgba(255,255,255,0.15); -webkit-transition: all 0.1s; transition: all 0.1s; }
+    .picker-item.active { color: #f5f3f7; font-size: 32px; font-weight: 700; }
+    .picker-footer { display: -webkit-flex; display: flex; border-top: 1px solid rgba(255,255,255,0.08); }
+    .picker-footer button {
+      -webkit-flex: 1; flex: 1; background: #191621; border: none; padding: 16px; cursor: pointer;
+      display: -webkit-flex; display: flex;
+      -webkit-justify-content: center; justify-content: center;
+      -webkit-align-items: center; align-items: center;
+    }
+    .picker-footer button:first-child { border-right: 1px solid rgba(255,255,255,0.08); }
+    .picker-footer button svg { width: 30px; height: 30px; stroke: #f5f3f7; }
+
+    /* =========================================
+       ENGRANAJE DE CONFIGURACIÓN
+       ========================================= */
+    .settings-gear-btn {
+      position: fixed; top: 14px; right: 14px; z-index: 9100;
+      background: transparent; border: none; padding: 10px; cursor: pointer;
+      opacity: 0.15; border-radius: 50%;
+      -webkit-transition: opacity 0.3s; transition: opacity 0.3s;
+    }
+    .settings-gear-btn.open { opacity: 0.9; }
+    .settings-gear-btn:active { opacity: 0.9; }
+    .settings-gear-btn svg { width: 30px; height: 30px; fill: #f5f3f7; display: block; }
+
+    /* =========================================
+       PANEL DE CONFIGURACIÓN
+       ========================================= */
+    .settings-panel {
+      position: fixed; top: 62px; right: 14px; z-index: 9000;
+      background: rgba(14, 11, 22, 0.97);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 12px; min-width: 240px;
+      -webkit-transform-origin: top right; transform-origin: top right;
+      -webkit-transform: scaleY(0.85) translateY(-8px); transform: scaleY(0.85) translateY(-8px);
+      opacity: 0; pointer-events: none;
+      -webkit-transition: opacity 0.22s, -webkit-transform 0.22s; transition: opacity 0.22s, transform 0.22s;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.9);
+    }
+    .settings-panel.open {
+      opacity: 1; pointer-events: auto;
+      -webkit-transform: scaleY(1) translateY(0); transform: scaleY(1) translateY(0);
+    }
+    .settings-panel-title {
+      font-size: 11px; color: #8e889a; text-transform: uppercase;
+      letter-spacing: 1.8px; padding: 2px 8px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 10px;
+    }
+    .settings-action-btn {
+      display: -webkit-flex; display: flex;
+      -webkit-align-items: center; align-items: center;
+      width: 100%; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07); border-radius: 12px;
+      color: #f5f3f7; padding: 14px 15px; font-size: 14px; font-weight: 600;
+      cursor: pointer; margin-bottom: 8px; text-align: left;
+      -webkit-transition: background 0.15s, border-color 0.15s; transition: background 0.15s, border-color 0.15s;
+    }
+    .settings-action-btn:last-child { margin-bottom: 0; }
+    .settings-action-btn:active { background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.3); }
+    .settings-action-btn svg {
+      width: 20px; height: 20px; stroke: #38bdf8; fill: none;
+      margin-right: 12px; -webkit-flex-shrink: 0; flex-shrink: 0;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* =========================================
+       OVERLAY DE WIDGET EN PANTALLA COMPLETA
+       ========================================= */
+    .widget-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 8000; background: #18151f;
+      opacity: 0; pointer-events: none;
+      -webkit-transition: opacity 0.32s; transition: opacity 0.32s;
+    }
+    .widget-overlay.visible { opacity: 1; pointer-events: auto; }
+
+    .widget-overlay-close-btn {
+      position: absolute; top: 18px; right: 18px; z-index: 10;
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50%; width: 48px; height: 48px; cursor: pointer;
+      display: -webkit-flex; display: flex;
+      -webkit-align-items: center; align-items: center;
+      -webkit-justify-content: center; justify-content: center;
+    }
+    .widget-overlay-close-btn svg { width: 22px; height: 22px; stroke: #f5f3f7; fill: none; stroke-width: 2; stroke-linecap: round; }
+    #widget-overlay-inner { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+
+    /* Galería en pantalla completa */
+    .fs-gallery-wrap { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+    .fs-gallery-wrap .gallery-slide { border-radius: 0; }
+    .fs-gallery-wrap .gallery-slide img { border-radius: 0; }
+    .fs-gallery-wrap .gallery-overlay { border-radius: 0; }
+
+    /* =========================================
+       CONTROLES DE GALERÍA (Dashboard y Fullscreen)
+       ========================================= */
+    .gallery-controls {
+      position: absolute; bottom: 16px; right: 16px; z-index: 25;
+      display: -webkit-flex; display: flex;
+      -webkit-align-items: center; align-items: center;
+      background: rgba(18, 14, 25, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 28px; padding: 4px 6px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+    }
+    .gal-btn {
+      background: transparent; border: none;
+      width: 38px; height: 38px; border-radius: 50%;
+      cursor: pointer; display: -webkit-flex; display: flex;
+      -webkit-align-items: center; align-items: center;
+      -webkit-justify-content: center; justify-content: center;
+      color: #f5f3f7; margin: 0 2px;
+      -webkit-transition: background 0.2s, -webkit-transform 0.1s;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .gal-btn:active {
+      background: rgba(56, 189, 248, 0.25);
+      -webkit-transform: scale(0.92); transform: scale(0.92);
+    }
+    .gal-btn svg {
+      width: 20px; height: 20px; stroke: #f5f3f7; fill: none;
+      stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+      pointer-events: none;
+    }
+    .gal-btn svg.icon-pause rect {
+      fill: #f5f3f7; stroke: none;
+    }
+    .gal-btn svg.icon-play polygon {
+      fill: #f5f3f7; stroke: none;
+    }
+
+    /* Controles de galería en pantalla completa */
+    .fs-gallery-controls {
+      position: absolute; bottom: 28px; left: 50%;
+      -webkit-transform: translateX(-50%); transform: translateX(-50%);
+      z-index: 50; display: -webkit-flex; display: flex;
+      -webkit-align-items: center; align-items: center;
+      background: rgba(14, 11, 22, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 36px; padding: 6px 14px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.75);
+    }
+    .fs-gallery-controls .gal-btn {
+      width: 50px; height: 50px; margin: 0 6px;
+    }
+    .fs-gallery-controls .gal-btn svg {
+      width: 26px; height: 26px;
+    }
+
+    /* Reloj en pantalla completa — conserva animación flip del dashboard */
+    .fs-clock-wrap {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: -webkit-flex; display: flex;
+      -webkit-flex-direction: column; flex-direction: column;
+      -webkit-align-items: center; align-items: center;
+      -webkit-justify-content: center; justify-content: center;
+      padding: 60px 20px 20px; /* espacio para el botón cerrar */
+    }
+    /* Fila horizontal de tarjetas flip en FS */
+    .fs-flip-row {
+      display: -webkit-flex; display: flex;
+      -webkit-align-items: center; align-items: center;
+      -webkit-justify-content: center; justify-content: center;
+      width: 100%;
+    }
+    /* Tarjeta flip escalada (hereda .flip-card base + override de tamaño) */
+    .fs-flip-card {
+      width: 26vw !important;
+      height: 42vh !important;
+      border-radius: 20px !important;
+      margin-bottom: 0 !important;
+    }
+    /* Dígito escalado dentro de la tarjeta FS */
+    .fs-flip-row .digit {
+      font-size: 15vw !important;
+    }
+    .fs-flip-row .static-top,
+    .fs-flip-row .flip-top {
+      line-height: 42vh !important;
+    }
+    .fs-flip-row .static-bot,
+    .fs-flip-row .flip-bot {
+      line-height: 0px !important;
+    }
+    /* Dos puntos separador grandes */
+    .fs-clock-dots {
+      font-size: 8vw; font-weight: bold;
+      color: rgba(255,255,255,0.2);
+      margin: 0 1.5vw; line-height: 1;
+      -webkit-transform: translateY(-8px); transform: translateY(-8px);
+    }
+    /* Fecha debajo del reloj FS */
+    .fs-clock-date {
+      font-size: 2.8vw; color: rgba(255,255,255,0.4);
+      margin-top: 28px; letter-spacing: 2px; text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* Calendario en pantalla completa */
+    .fs-calendar-wrap {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: -webkit-flex; display: flex;
+      -webkit-flex-direction: column; flex-direction: column;
+      padding: 72px 5% 28px;
+    }
+    .fs-calendar-wrap .calendar-weekdays { padding-bottom: 14px; }
+    .fs-calendar-wrap .calendar-weekdays span { font-size: 24px; }
+    .fs-calendar-wrap .calendar-grid { -webkit-flex: 1; flex: 1; padding: 14px 0; }
+    .fs-calendar-wrap .day { font-size: 34px; height: 14.28%; }
+    .fs-calendar-wrap .day-inner { width: 56px; height: 56px; border-radius: 14px; }
+    .fs-calendar-wrap .month-label { font-size: 32px; }
+    .fs-calendar-wrap .nav-btn { font-size: 24px; }
+    .fs-calendar-wrap .calendar-footer { padding-top: 10px; }
+
+    /* =========================================
+       MEDIA QUERIES — ESCENARIO 1
+       Samsung Tab 10" horizontal (1100-1500px, ≤ 860px alto)
+       ========================================= */
+    @media screen and (min-width: 1100px) and (max-height: 860px) {
+      .tablet-screen { padding: 22px 28px; }
+      .left-column { width: 37%; margin-right: 26px; }
+      .flip-card { height: 210px; }
+      .digit { font-size: 86px; }
+      .static-top, .flip-top { line-height: 210px; }
+      .clock-dots { font-size: 44px; }
+      .actions-grid { height: 150px; margin-top: 18px; }
+      .day { font-size: 21px; }
+      .day-inner { width: 36px; height: 36px; border-radius: 10px; }
+      .month-label { font-size: 21px; }
+      .calendar-weekdays span { font-size: 15px; }
+      .calendar-container { padding: 8px 20px; }
+      .gallery-caption h4 { font-size: 16px; }
+      .gallery-caption p { font-size: 12px; }
+    }
+
+    /* =========================================
+       MEDIA QUERIES — ESCENARIO 2
+       Móvil 5-6" (≤ 900px ancho, orientación vertical)
+       ========================================= */
+    @media screen and (max-width: 900px) {
+      html, body { overflow-y: auto; overflow-x: hidden; }
+      .tablet-screen {
+        position: relative;
+        -webkit-flex-direction: column; flex-direction: column;
+        height: auto; min-height: 100vh; padding: 18px;
+      }
+      .left-column { width: 100%; height: auto; margin-right: 0; margin-bottom: 18px; }
+      .right-column { width: 100%; height: auto; }
+      .gallery-container { min-height: 300px; -webkit-flex: none; flex: none; }
+      .clock-container { height: auto; min-height: 240px; margin-bottom: 18px; }
+      .calendar-container { min-height: 400px; }
+      .fs-flip-card {
+        width: 28vw !important;
+        height: 22vh !important;
+      }
+      .fs-flip-row .digit {
+        font-size: 13vw !important;
+      }
+      .fs-flip-row .static-top,
+      .fs-flip-row .flip-top {
+        line-height: 22vh !important;
+      }
+      .fs-clock-dots {
+        font-size: 6vw !important;
+      }
+      .fs-clock-date {
+        font-size: 4vw !important;
+        margin-top: 18px !important;
+      }
+    }
+
+    @media screen and (max-width: 700px) {
+      .tablet-screen { padding: 14px; }
+      .gallery-container { min-height: 260px; }
+      .actions-grid { height: auto; margin-top: 14px; -webkit-flex-wrap: wrap; flex-wrap: wrap; }
+      .action-card { width: 48%; padding: 16px 8px; margin-bottom: 10px; }
+      .action-card:nth-child(3) { width: 100%; margin-bottom: 0; }
+      .flip-card { height: 140px; }
+      .digit { font-size: 56px; }
+      .static-top, .flip-top { line-height: 140px; }
+      .clock-dots { font-size: 30px; }
+      .clock-container { padding: 14px 6px; -webkit-justify-content: space-around; justify-content: space-around; min-height: 200px; }
+      .day { font-size: 18px; }
+      .day-inner { width: 32px; height: 32px; border-radius: 8px; }
+      .month-label { font-size: 18px; }
+      .calendar-weekdays span { font-size: 13px; }
+      .calendar-container { padding: 10px 12px; }
+      #btn-stopwatch > div { width: 110px !important; height: 110px !important; }
+      #stopwatch-text { font-size: 20px !important; }
+    }
+
+    /* =========================================
+       MEDIA QUERIES — ESCENARIO 3
+       Samsung Galaxy S24 Ultra (DPR ≥ 3)
+       Landscape: pantalla ancha de alta densidad
+       ========================================= */
+    @media screen and (-webkit-min-device-pixel-ratio: 3) and (min-width: 600px) and (orientation: landscape) {
+      .tablet-screen { padding: 20px 26px; }
+      .left-column { width: 36%; margin-right: 22px; }
+      .flip-card { height: 27vh; }
+      .digit { font-size: 10.5vw; }
+      .static-top, .flip-top { line-height: 27vh; }
+      .clock-dots { font-size: 4.5vw; }
+      .clock-container { padding: 16px 8px; -webkit-justify-content: space-evenly; justify-content: space-evenly; }
+      .day { font-size: 2.6vw; }
+      .day-inner { width: 3.8vw; height: 3.8vw; min-width: 28px; min-height: 28px; border-radius: 10px; }
+      .month-label { font-size: 2.6vw; }
+      .calendar-weekdays span { font-size: 2vw; }
+      .actions-grid { height: 20vh; margin-top: 16px; }
+      #stopwatch-text { font-size: 2.4vw !important; }
+      #btn-stopwatch > div { width: 15vh !important; height: 15vh !important; }
+    }
+
+    /* S24 Ultra / flagship en portrait: pantalla alta y angosta en CSS pixels */
+    @media screen and (-webkit-min-device-pixel-ratio: 3) and (max-width: 500px) and (orientation: portrait) {
+      .flip-card { height: 16vh; }
+      .digit { font-size: 10vw; }
+      .static-top, .flip-top { line-height: 16vh; }
+      .clock-dots { font-size: 6vw; }
+      .clock-container { min-height: 22vh; }
+      .day { font-size: 4.8vw; }
+      .day-inner { width: 8vw; height: 8vw; border-radius: 8px; }
+      .month-label { font-size: 4.8vw; }
+      .calendar-weekdays span { font-size: 3.8vw; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================
+       AUDIO
+       ======================== -->
+  <audio id="alarmAudio" src="alarma.mp3" preload="auto" loop></audio>
+
+  <!-- Selectores fallback para pruebas en navegador (sin AndroidApp) -->
+  <input type="file" id="image-picker" multiple accept="image/*" style="display:none;">
+  <input type="file" id="audio-picker" accept="audio/*" style="display:none;">
+
+  <!-- ========================
+       ENGRANAJE DE CONFIGURACIÓN (fixed, esquina superior derecha)
+       ======================== -->
+  <button class="settings-gear-btn" id="settings-gear-btn" onclick="toggleSettings(event)">
+    <!-- Ícono SVG de engranaje (gear / cog) -->
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+    </svg>
+  </button>
+
+  <!-- ========================
+       PANEL DE CONFIGURACIÓN
+       ======================== -->
+  <div class="settings-panel" id="settings-panel">
+    <div class="settings-panel-title">Configuración</div>
+    <!-- Botón: Seleccionar Fotos -->
+    <button class="settings-action-btn" onclick="seleccionarFotos()">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="3"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+      Seleccionar Fotos
+    </button>
+    <!-- Botón: Seleccionar Audio Alarma -->
+    <button class="settings-action-btn" onclick="seleccionarAudio()">
+      <svg viewBox="0 0 24 24">
+        <path d="M9 18V5l12-2v13"/>
+        <circle cx="6" cy="18" r="3"/>
+        <circle cx="18" cy="16" r="3"/>
+      </svg>
+      Seleccionar Audio Alarma
+    </button>
+  </div>
+
+  <!-- ========================
+       OVERLAY PANTALLA COMPLETA (Widgets)
+       ======================== -->
+  <div class="widget-overlay" id="widget-overlay">
+    <button class="widget-overlay-close-btn" id="widget-overlay-close" onclick="cerrarWidgetOverlay(event)">
+      <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div id="widget-overlay-inner"></div>
+  </div>
+
+  <!-- ========================
+       WHEEL PICKER (OSCURO) — ORIGINAL
+       ======================== -->
+  <div class="picker-overlay" id="picker-overlay">
+    <div class="picker-box">
+      <div class="picker-header">
+        <span id="picker-title">Configurar</span>
+        <span class="picker-disable-btn" id="picker-disable">Apagar</span>
+      </div>
+      <div class="picker-columns-header" id="picker-headers" style="display:none;">
+        <div>Horas</div><div>Minutos</div><div>Segundos</div>
+      </div>
+      <div class="picker-content">
+        <div id="sep-1" style="position:absolute;left:33.33%;top:88px;height:44px;line-height:40px;font-size:32px;font-weight:bold;color:#f5f3f7;-webkit-transform:translateX(-50%);transform:translateX(-50%);z-index:5;pointer-events:none;display:none;">:</div>
+        <div id="sep-2" style="position:absolute;left:66.66%;top:88px;height:44px;line-height:40px;font-size:32px;font-weight:bold;color:#f5f3f7;-webkit-transform:translateX(-50%);transform:translateX(-50%);z-index:5;pointer-events:none;display:none;">:</div>
+        <div class="picker-selection-bg"></div>
+        <div class="picker-col" id="col-1"></div>
+        <div class="picker-col" id="col-2"></div>
+        <div class="picker-col" id="col-3"></div>
+      </div>
+      <div class="picker-footer">
+        <button id="picker-btn-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></button>
+        <button id="picker-btn-cancel"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================
+       LAYOUT PRINCIPAL
+       ======================== -->
+  <div class="tablet-screen">
+    <!-- COLUMNA IZQUIERDA -->
+    <div class="left-column">
+
+      <!-- Galería de fotos -->
+      <div class="gallery-container" id="gallery-container">
+        <div class="gallery-empty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8e889a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
+          Sin fotos seleccionadas
+        </div>
+      </div>
+
+      <!-- Malla de Acciones -->
+      <div class="actions-grid">
+        <!-- 1. ALARMA -->
+        <div class="action-card" id="btn-alarm">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;">
+            <circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 14 15"/><path d="M5 3 2 6"/><path d="M19 3l3 3"/>
+          </svg>
+          <small id="alarm-text">Inactivo</small>
+        </div>
+        <!-- 2. TEMPORIZADOR -->
+        <div class="action-card" id="btn-timer">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;">
+            <circle cx="12" cy="14" r="8"/><polyline points="12 10 12 14 15 14"/><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="2" x2="12" y2="6"/>
+          </svg>
+          <small id="timer-text">Inactivo</small>
+        </div>
+        <!-- 3. CRONÓMETRO -->
+        <div class="action-card" id="btn-stopwatch">
+          <div style="position:relative;width:150px;height:150px;">
+            <svg viewBox="0 0 100 100" style="width:100%;height:100%;display:block;">
+              <circle cx="50" cy="50" r="48" fill="#1e1a26" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="1 3.398"/>
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#f5f3f7" stroke-width="3" stroke-dasharray="1 20.99"/>
+              <circle cx="50" cy="50" r="36" fill="#231f2c"/>
+              <g id="sw-needle" transform="rotate(0 50 50)">
+                <line x1="50" y1="50" x2="50" y2="14" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="3" fill="#6366f1"/>
+              </g>
+            </svg>
+            <div id="stopwatch-text" style="position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:28px;font-weight:bold;color:#f5f3f7;letter-spacing:1px;">00:00.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA -->
+    <div class="right-column">
+      <!-- Reloj Flip -->
+      <div class="clock-container" id="clock-container">
+        <div class="flip-group">
+          <div class="flip-card" id="card-hours">
+            <div class="hinge-line"></div>
+            <div class="digit static-bot" id="hours-static-bot">00</div>
+            <div class="digit static-top" id="hours-static-top">00</div>
+            <div class="digit flip-bot"    id="hours-flip-bot">00</div>
+            <div class="digit flip-top"    id="hours-flip-top">00</div>
+          </div>
+        </div>
+        <span class="clock-dots">:</span>
+        <div class="flip-group">
+          <div class="flip-card" id="card-minutes">
+            <div class="hinge-line"></div>
+            <div class="digit static-bot" id="mins-static-bot">00</div>
+            <div class="digit static-top" id="mins-static-top">00</div>
+            <div class="digit flip-bot"   id="mins-flip-bot">00</div>
+            <div class="digit flip-top"   id="mins-flip-top">00</div>
+          </div>
+        </div>
+        <span class="clock-dots">:</span>
+        <div class="flip-group">
+          <div class="flip-card" id="card-seconds">
+            <div class="hinge-line"></div>
+            <div class="digit static-bot" id="secs-static-bot">00</div>
+            <div class="digit static-top" id="secs-static-top">00</div>
+            <div class="digit flip-bot"   id="secs-flip-bot">00</div>
+            <div class="digit flip-top"   id="secs-flip-top">00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendario -->
+      <div class="calendar-container" id="calendar-container">
+        <div class="calendar-weekdays">
+          <span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span>
+        </div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+        <div class="calendar-footer">
+          <div class="month-label" id="month-label"><span>📅 Cargando...</span></div>
+          <div>
+            <span class="nav-btn" id="prev-month">◀</span>
+            <span class="nav-btn" id="next-month">▶</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /.tablet-screen -->
+
+  <!-- ========================
+       JAVASCRIPT
+       ======================== -->
+  <script>
+
+    /* ==========================================
+       REFERENCIAS GLOBALES
+       ========================================== */
+    var audioPlayer      = document.getElementById('alarmAudio');
+    var galleryContainer = document.getElementById('gallery-container');
+    var imagePicker      = document.getElementById('image-picker');
+    var audioPicker      = document.getElementById('audio-picker');
+    var settingsPanel    = document.getElementById('settings-panel');
+    var settingsGearBtn  = document.getElementById('settings-gear-btn');
+    var widgetOverlay    = document.getElementById('widget-overlay');
+    var widgetOverlayInner = document.getElementById('widget-overlay-inner');
+
+    var galleryInterval   = null;
+    var fsGalleryInterval = null;
+    var currentWidgetType = null;
+
+    var monthNames = [
+      'Enero','Febrero','Marzo','Abril','Mayo','Junio',
+      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
+    ];
+    var diasSemana = ['Domingo','Lunes','Martes','Mi\u00e9rcoles','Jueves','Viernes','S\u00e1bado'];
+    var currentDate  = new Date();
+    var displayMonth = currentDate.getMonth();
+    var displayYear  = currentDate.getFullYear();
+
+    /* ==========================================
+       INMERSIÓN (FULLSCREEN ANDROID NATIVO)
+       ========================================== */
+    document.body.addEventListener('click', function(e) {
+      // Si el overlay de widget está visible, no tocar
+      if (widgetOverlay.className.indexOf('visible') !== -1) return;
+
+      var target = e.target;
+      var isInteractive = false;
+      while (target && target !== document.body) {
+        if (target.className && typeof target.className === 'string') {
+          if (target.className.indexOf('action-card') !== -1 ||
+              target.className.indexOf('picker-box') !== -1 ||
+              target.className.indexOf('settings') !== -1 ||
+              target.className.indexOf('nav-btn') !== -1) {
+            isInteractive = true;
+          }
+        }
+        target = target.parentNode;
+      }
+      if (isInteractive || e.target.tagName.toLowerCase() === 'input') return;
+      if (audioPlayer.paused && audioPlayer.currentTime === 0) audioPlayer.load();
+      var elem = document.documentElement;
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (elem.requestFullscreen) elem.requestFullscreen();
+        else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+      }
+    });
+
+    /* ==========================================
+       PANEL DE CONFIGURACIÓN
+       ========================================== */
+    function toggleSettings(e) {
+      e.stopPropagation();
+      var isOpen = settingsPanel.className.indexOf('open') !== -1;
+      if (isOpen) {
+        settingsPanel.className = 'settings-panel';
+        settingsGearBtn.className = 'settings-gear-btn';
+      } else {
+        settingsPanel.className = 'settings-panel open';
+        settingsGearBtn.className = 'settings-gear-btn open';
+      }
+    }
+
+    function cerrarSettings() {
+      settingsPanel.className = 'settings-panel';
+      settingsGearBtn.className = 'settings-gear-btn';
+    }
+
+    // Cerrar panel al tocar fuera
+    document.addEventListener('click', function(e) {
+      if (settingsPanel.className.indexOf('open') === -1) return;
+      var target = e.target;
+      while (target) {
+        if (target === settingsPanel || target === settingsGearBtn) return;
+        target = target.parentNode;
+      }
+      cerrarSettings();
+    });
+
+    /* ==========================================
+       PUENTE NATIVO — JavascriptInterface
+       ========================================== */
+
+    /**
+     * Llamado desde el botón "Seleccionar Fotos".
+     * En Android: llama AndroidApp.seleccionarFotos() → Java abre el selector.
+     * En navegador: usa el <input type="file"> como fallback.
+     */
+    function seleccionarFotos() {
+      cerrarSettings();
+      try {
+        if (typeof AndroidApp !== 'undefined' && AndroidApp.seleccionarFotos) {
+          AndroidApp.seleccionarFotos();
+          return;
+        }
+      } catch (err) { /* continuar al fallback */ }
+      imagePicker.click();
+    }
+
+    /**
+     * Llamado desde el botón "Seleccionar Audio Alarma".
+     * En Android: llama AndroidApp.seleccionarAudio() → Java abre el selector.
+     * En navegador: usa el <input type="file"> como fallback.
+     */
+    function seleccionarAudio() {
+      cerrarSettings();
+      try {
+        if (typeof AndroidApp !== 'undefined' && AndroidApp.seleccionarAudio) {
+          AndroidApp.seleccionarAudio();
+          return;
+        }
+      } catch (err) { /* continuar al fallback */ }
+      audioPicker.click();
+    }
+
+    /* ==========================================
+       VARIABLES DE CONTROL DE GALERÍA
+       ========================================== */
+    var galleryPaths = [];
+    var galleryIndex = 0;
+    var isGalleryPaused = false;
+
+    /**
+     * CALLBACK — Java llama esta función tras procesar las fotos.
+     * paths: array de strings, ej. ['file:///data/.../gallery/img_0.jpg', ...]
+     * Expuesto en window para que loadUrl("javascript:actualizarGaleria(...)") funcione.
+     */
+    function actualizarGaleria(paths) {
+      if (!paths || paths.length === 0) return;
+      galleryPaths = paths;
+      galleryIndex = 0;
+      isGalleryPaused = false;
+      renderGallerySlides();
+    }
+
+    /**
+     * CALLBACK — Java llama esta función tras copiar el audio.
+     * path: string, ej. 'file:///data/.../audio/alarma.mp3'
+     */
+    function actualizarAudio(path) {
+      audioPlayer.src = path;
+      audioPlayer.load();
+    }
+
+    /* ==========================================
+       FALLBACKS PARA NAVEGADOR (pruebas en PC)
+       ========================================== */
+    imagePicker.addEventListener('change', function(e) {
+      var files = e.target.files;
+      if (!files || files.length === 0) return;
+      var arr = [];
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        if (!file.type.match('image.*')) continue;
+        arr.push({ url: URL.createObjectURL(file), name: file.name });
+      }
+      if (arr.length > 0) {
+        galleryPaths = arr;
+        galleryIndex = 0;
+        isGalleryPaused = false;
+        renderGallerySlides();
+      }
+    });
+
+    audioPicker.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      actualizarAudio(URL.createObjectURL(file));
+    });
+
+    /* ==========================================
+       GALERÍA — RENDER Y CONTROLADORES
+       ========================================== */
+    function renderGallerySlides() {
+      if (!galleryPaths || galleryPaths.length === 0) return;
+      var html = '<div class="gallery-slides-wrap" style="position:absolute;top:0;left:0;right:0;bottom:0;">';
+      for (var i = 0; i < galleryPaths.length; i++) {
+        var item = galleryPaths[i];
+        var url = typeof item === 'string' ? item : item.url;
+        var name = typeof item === 'string' ? ('Foto ' + (i + 1)) : item.name;
+        var cls = (i === galleryIndex) ? ' active' : '';
+        html += '<div class="gallery-slide' + cls + '">' +
+          '<img src="' + url + '" alt="' + name + '">' +
+          '<div class="gallery-overlay"><div class="gallery-caption">' +
+          '<h4>' + name + '</h4><p>Foto ' + (i + 1) + ' de ' + galleryPaths.length + '</p>' +
+          '</div></div></div>';
+      }
+      html += '</div>';
+
+      // Barra de controles en el dashboard
+      html += '<div class="gallery-controls" id="gallery-controls">' +
+        '<button class="gal-btn" id="gal-btn-prev" title="Anterior">' +
+          '<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>' +
+        '</button>' +
+        '<button class="gal-btn" id="gal-btn-pause" title="Pausar / Reanudar">' +
+          '<svg class="icon-pause" viewBox="0 0 24 24" style="' + (isGalleryPaused ? 'display:none;' : '') + '"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' +
+          '<svg class="icon-play" viewBox="0 0 24 24" style="' + (isGalleryPaused ? '' : 'display:none;') + '"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
+        '</button>' +
+        '<button class="gal-btn" id="gal-btn-next" title="Siguiente">' +
+          '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>' +
+        '</button>' +
+      '</div>';
+
+      galleryContainer.innerHTML = html;
+      attachGalleryControlEvents();
+      reiniciarIntervaloCarrusel();
+    }
+
+    function attachGalleryControlEvents() {
+      var prevBtn  = document.getElementById('gal-btn-prev');
+      var pauseBtn = document.getElementById('gal-btn-pause');
+      var nextBtn  = document.getElementById('gal-btn-next');
+
+      if (prevBtn) {
+        prevBtn.onclick = function(e) {
+          if (e) e.stopPropagation();
+          galeriaAnterior();
+        };
+      }
+      if (nextBtn) {
+        nextBtn.onclick = function(e) {
+          if (e) e.stopPropagation();
+          galeriaSiguiente();
+        };
+      }
+      if (pauseBtn) {
+        pauseBtn.onclick = function(e) {
+          if (e) e.stopPropagation();
+          togglePausaGaleria();
+        };
+      }
+    }
+
+    function galeriaSiguiente() {
+      if (!galleryPaths || galleryPaths.length <= 1) return;
+      galleryIndex = (galleryIndex + 1) % galleryPaths.length;
+      actualizarSlideActivo();
+      if (!isGalleryPaused) reiniciarIntervaloCarrusel();
+    }
+
+    function galeriaAnterior() {
+      if (!galleryPaths || galleryPaths.length <= 1) return;
+      galleryIndex = (galleryIndex - 1 + galleryPaths.length) % galleryPaths.length;
+      actualizarSlideActivo();
+      if (!isGalleryPaused) reiniciarIntervaloCarrusel();
+    }
+
+    function togglePausaGaleria() {
+      isGalleryPaused = !isGalleryPaused;
+      actualizarIconosPausa();
+      if (isGalleryPaused) {
+        if (galleryInterval) { clearInterval(galleryInterval); galleryInterval = null; }
+        if (fsGalleryInterval) { clearInterval(fsGalleryInterval); fsGalleryInterval = null; }
+      } else {
+        reiniciarIntervaloCarrusel();
+      }
+    }
+
+    function actualizarSlideActivo() {
+      // En galería dashboard
+      var slides = galleryContainer.querySelectorAll('.gallery-slide');
+      for (var i = 0; i < slides.length; i++) {
+        slides[i].className = 'gallery-slide' + (i === galleryIndex ? ' active' : '');
+      }
+      // En galería fullscreen (si está abierta)
+      if (currentWidgetType === 'gallery') {
+        var fsSlides = widgetOverlayInner.querySelectorAll('.gallery-slide');
+        for (var j = 0; j < fsSlides.length; j++) {
+          fsSlides[j].className = 'gallery-slide' + (j === galleryIndex ? ' active' : '');
+        }
+      }
+    }
+
+    function actualizarIconosPausa() {
+      // Dashboard
+      var pIcon = document.querySelector('#gallery-controls .icon-pause');
+      var playIcon = document.querySelector('#gallery-controls .icon-play');
+      if (pIcon && playIcon) {
+        pIcon.style.display = isGalleryPaused ? 'none' : 'block';
+        playIcon.style.display = isGalleryPaused ? 'block' : 'none';
+      }
+      // Fullscreen
+      var fsPIcon = document.querySelector('.fs-gallery-controls .icon-pause');
+      var fsPlayIcon = document.querySelector('.fs-gallery-controls .icon-play');
+      if (fsPIcon && fsPlayIcon) {
+        fsPIcon.style.display = isGalleryPaused ? 'none' : 'block';
+        fsPlayIcon.style.display = isGalleryPaused ? 'block' : 'none';
+      }
+    }
+
+    function reiniciarIntervaloCarrusel() {
+      if (galleryInterval) clearInterval(galleryInterval);
+      if (fsGalleryInterval) clearInterval(fsGalleryInterval);
+      if (isGalleryPaused) return;
+
+      if (galleryPaths && galleryPaths.length > 1) {
+        galleryInterval = setInterval(function() {
+          galeriaSiguiente();
+        }, 5000);
+      }
+    }
+
+    // Click en galería: expandir o abrir configuración si está vacía
+    galleryContainer.addEventListener('click', function(e) {
+      // Evitar abrir fullscreen si se tocó algún botón de control
+      var target = e.target;
+      while (target && target !== galleryContainer) {
+        if (target.className && typeof target.className === 'string' &&
+            (target.className.indexOf('gal-btn') !== -1 || target.className.indexOf('gallery-controls') !== -1)) {
+          return;
+        }
+        target = target.parentNode;
+      }
+
+      if (widgetOverlay.className.indexOf('visible') !== -1) return;
+      if (galleryPaths && galleryPaths.length > 0) {
+        abrirWidgetOverlay('gallery');
+      } else {
+        settingsPanel.className = 'settings-panel open';
+        settingsGearBtn.className = 'settings-gear-btn open';
+      }
+    });
+
+    /* ==========================================
+       EXPANSIÓN A PANTALLA COMPLETA — WIDGETS
+       ========================================== */
+    function abrirWidgetOverlay(type) {
+      currentWidgetType = type;
+      widgetOverlayInner.innerHTML = '';
+
+      if (type === 'gallery') {
+        /* — Galería en pantalla completa con controles — */
+        if (!galleryPaths || galleryPaths.length === 0) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'fs-gallery-wrap';
+        var slidesHtml = '';
+        for (var i = 0; i < galleryPaths.length; i++) {
+          var item = galleryPaths[i];
+          var url = typeof item === 'string' ? item : item.url;
+          var name = typeof item === 'string' ? ('Foto ' + (i + 1)) : item.name;
+          var cls = (i === galleryIndex) ? ' active' : '';
+          slidesHtml += '<div class="gallery-slide' + cls + '">' +
+            '<img src="' + url + '" alt="' + name + '" style="border-radius: 0;">' +
+            '<div class="gallery-overlay" style="border-radius: 0;"><div class="gallery-caption">' +
+            '<h4>' + name + '</h4><p>Foto ' + (i + 1) + ' de ' + galleryPaths.length + '</p>' +
+            '</div></div></div>';
+        }
+        // Controles de pantalla completa
+        slidesHtml += '<div class="fs-gallery-controls">' +
+          '<button class="gal-btn fs-prev" title="Anterior">' +
+            '<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>' +
+          '</button>' +
+          '<button class="gal-btn fs-pause" title="Pausar / Reanudar">' +
+            '<svg class="icon-pause" viewBox="0 0 24 24" style="' + (isGalleryPaused ? 'display:none;' : '') + '"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' +
+            '<svg class="icon-play" viewBox="0 0 24 24" style="' + (isGalleryPaused ? '' : 'display:none;') + '"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
+          '</button>' +
+          '<button class="gal-btn fs-next" title="Siguiente">' +
+            '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>' +
+          '</button>' +
+        '</div>';
+
+        wrap.innerHTML = slidesHtml;
+        widgetOverlayInner.appendChild(wrap);
+
+        // Eventos controles fullscreen
+        var fsPrev  = wrap.querySelector('.fs-prev');
+        var fsPause = wrap.querySelector('.fs-pause');
+        var fsNext  = wrap.querySelector('.fs-next');
+        if (fsPrev)  fsPrev.onclick  = function(e) { if (e) e.stopPropagation(); galeriaAnterior(); };
+        if (fsNext)  fsNext.onclick  = function(e) { if (e) e.stopPropagation(); galeriaSiguiente(); };
+        if (fsPause) fsPause.onclick = function(e) { if (e) e.stopPropagation(); togglePausaGaleria(); };
+
+        if (!isGalleryPaused) {
+          reiniciarIntervaloCarrusel();
+        }
+
+      } else if (type === 'clock') {
+        /* — Reloj flip real en pantalla completa — */
+        var wrap = document.createElement('div');
+        wrap.className = 'fs-clock-wrap';
+        wrap.innerHTML =
+          '<div class="fs-flip-row">' +
+            '<div class="flip-card fs-flip-card" id="fs-card-hours">' +
+              '<div class="hinge-line"></div>' +
+              '<div class="digit static-bot" id="fs-hours-static-bot">00</div>' +
+              '<div class="digit static-top" id="fs-hours-static-top">00</div>' +
+              '<div class="digit flip-bot"   id="fs-hours-flip-bot">00</div>' +
+              '<div class="digit flip-top"   id="fs-hours-flip-top">00</div>' +
+            '</div>' +
+            '<span class="fs-clock-dots">:</span>' +
+            '<div class="flip-card fs-flip-card" id="fs-card-minutes">' +
+              '<div class="hinge-line"></div>' +
+              '<div class="digit static-bot" id="fs-mins-static-bot">00</div>' +
+              '<div class="digit static-top" id="fs-mins-static-top">00</div>' +
+              '<div class="digit flip-bot"   id="fs-mins-flip-bot">00</div>' +
+              '<div class="digit flip-top"   id="fs-mins-flip-top">00</div>' +
+            '</div>' +
+            '<span class="fs-clock-dots">:</span>' +
+            '<div class="flip-card fs-flip-card" id="fs-card-seconds">' +
+              '<div class="hinge-line"></div>' +
+              '<div class="digit static-bot" id="fs-secs-static-bot">00</div>' +
+              '<div class="digit static-top" id="fs-secs-static-top">00</div>' +
+              '<div class="digit flip-bot"   id="fs-secs-flip-bot">00</div>' +
+              '<div class="digit flip-top"   id="fs-secs-flip-top">00</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="fs-clock-date" id="fs-clock-date"></div>';
+        widgetOverlayInner.appendChild(wrap);
+        // Instanciar módulos flip para pantalla completa
+        fsHoursModule = new FlipModule('fs-card-hours', 'fs-hours');
+        fsMinsModule  = new FlipModule('fs-card-minutes', 'fs-mins');
+        fsSecsModule  = new FlipModule('fs-card-seconds', 'fs-secs');
+        // Actualizar valores iniciales de inmediato
+        var nowInit = new Date();
+        fsHoursModule.update(padZero(nowInit.getHours()));
+        fsMinsModule.update(padZero(nowInit.getMinutes()));
+        fsSecsModule.update(padZero(nowInit.getSeconds()));
+        // Actualizar fecha inmediatamente
+        actualizarFechaFS();
+
+      } else if (type === 'calendar') {
+        /* — Calendario grande — */
+        var wrap = document.createElement('div');
+        wrap.className = 'fs-calendar-wrap';
+        wrap.innerHTML =
+          '<div class="calendar-weekdays"><span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span></div>' +
+          '<div class="calendar-grid" id="fs-cal-grid"></div>' +
+          '<div class="calendar-footer">' +
+            '<div class="month-label" id="fs-month-label"></div>' +
+            '<div><span class="nav-btn" id="fs-prev">&#9664;</span> <span class="nav-btn" id="fs-next">&#9654;</span></div>' +
+          '</div>';
+        widgetOverlayInner.appendChild(wrap);
+        renderFsCalendar(displayMonth, displayYear);
+
+        document.getElementById('fs-prev').onclick = function(e) {
+          e.stopPropagation();
+          displayMonth--; if (displayMonth < 0) { displayMonth = 11; displayYear--; }
+          renderCalendar(displayMonth, displayYear);
+          renderFsCalendar(displayMonth, displayYear);
+        };
+        document.getElementById('fs-next').onclick = function(e) {
+          e.stopPropagation();
+          displayMonth++; if (displayMonth > 11) { displayMonth = 0; displayYear++; }
+          renderCalendar(displayMonth, displayYear);
+          renderFsCalendar(displayMonth, displayYear);
+        };
+      }
+
+      // Ocultar engranaje para que no tape el botón de cerrar
+      settingsGearBtn.style.opacity = '0';
+      settingsGearBtn.style.pointerEvents = 'none';
+
+      // Animación de entrada
+      setTimeout(function() {
+        widgetOverlay.className = 'widget-overlay visible';
+      }, 10);
+    }
+
+    function cerrarWidgetOverlay(e) {
+      if (e) e.stopPropagation();
+      widgetOverlay.className = 'widget-overlay';
+      if (fsGalleryInterval) { clearInterval(fsGalleryInterval); fsGalleryInterval = null; }
+      // Nulificar módulos flip FS
+      fsHoursModule = null; fsMinsModule = null; fsSecsModule = null;
+      currentWidgetType = null;
+      // Restaurar engranaje
+      settingsGearBtn.style.opacity = '';
+      settingsGearBtn.style.pointerEvents = '';
+      setTimeout(function() { widgetOverlayInner.innerHTML = ''; }, 350);
+    }
+
+    // Variables para los módulos flip de pantalla completa (null cuando el overlay está cerrado)
+    var fsHoursModule = null;
+    var fsMinsModule  = null;
+    var fsSecsModule  = null;
+
+    /** Actualiza solo la etiqueta de fecha en el reloj fullscreen */
+    function actualizarFechaFS() {
+      var elD = document.getElementById('fs-clock-date');
+      if (!elD) return;
+      var now = new Date();
+      elD.innerHTML = diasSemana[now.getDay()] + ', ' + now.getDate() + ' de ' + monthNames[now.getMonth()];
+    }
+
+    function renderFsCalendar(month, year) {
+      var grid  = document.getElementById('fs-cal-grid');
+      var label = document.getElementById('fs-month-label');
+      if (!grid) return;
+      if (label) label.innerHTML = '<span>\uD83D\uDCC5 ' + monthNames[month] + ' ' + year + '</span>';
+      var firstDay = new Date(year, month, 1).getDay();
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var daysInPrevMonth = new Date(year, month, 0).getDate();
+      var html = '';
+      for (var i = 0; i < 42; i++) {
+        if (i < firstDay) {
+          html += '<div class="day muted"><div class="day-inner">' + (daysInPrevMonth - firstDay + i + 1) + '</div></div>';
+        } else if (i < firstDay + daysInMonth) {
+          var d = i - firstDay + 1;
+          var isTd = (d === currentDate.getDate() && month === currentDate.getMonth() && year === currentDate.getFullYear());
+          html += '<div class="day' + (isTd ? ' today' : '') + '"><div class="day-inner">' + d + '</div></div>';
+        } else {
+          html += '<div class="day muted"><div class="day-inner">' + (i - (firstDay + daysInMonth) + 1) + '</div></div>';
+        }
+      }
+      grid.innerHTML = html;
+    }
+
+    // Click en reloj → expandir
+    document.getElementById('clock-container').addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (widgetOverlay.className.indexOf('visible') !== -1) return;
+      abrirWidgetOverlay('clock');
+    });
+
+    // Click en calendario → expandir (excepto nav-btn)
+    document.getElementById('calendar-container').addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (widgetOverlay.className.indexOf('visible') !== -1) return;
+      var target = e.target;
+      while (target && target !== document.body) {
+        if (target.className && typeof target.className === 'string' &&
+            target.className.indexOf('nav-btn') !== -1) return;
+        target = target.parentNode;
+      }
+      abrirWidgetOverlay('calendar');
+    });
+
+    /* ==========================================
+       WHEEL PICKER — ORIGINAL
+       ========================================== */
+    function ScrollColumn(id) {
+      this.container = document.getElementById(id);
+      this.itemHeight = 44;
+      this.data = [];
+      this.selectedIndex = 0;
+      this.timeout = null;
+      var self = this;
+      this.container.addEventListener('scroll', function() {
+        var st = self.container.scrollTop;
+        var index = Math.round(st / self.itemHeight);
+        if (index < 0) index = 0;
+        if (index >= self.data.length) index = self.data.length - 1;
+        if (index !== self.selectedIndex) { self.selectedIndex = index; self.updateActive(); }
+        clearTimeout(self.timeout);
+        self.timeout = setTimeout(function() { self.container.scrollTop = self.selectedIndex * self.itemHeight; }, 150);
+      });
+    }
+    ScrollColumn.prototype.load = function(data, defaultIndex) {
+      this.data = data;
+      var h = '<div style="height:' + (this.itemHeight * 2) + 'px;"></div>';
+      for (var i = 0; i < this.data.length; i++) {
+        h += '<div class="picker-item" id="' + this.container.id + '-item-' + i + '">' + this.data[i] + '</div>';
+      }
+      h += '<div style="height:' + (this.itemHeight * 2) + 'px;"></div>';
+      this.container.innerHTML = h;
+      this.selectedIndex = defaultIndex || 0;
+      var self = this;
+      setTimeout(function() { self.container.scrollTop = self.selectedIndex * self.itemHeight; self.updateActive(); }, 50);
+    };
+    ScrollColumn.prototype.updateActive = function() {
+      for (var i = 0; i < this.data.length; i++) {
+        var el = document.getElementById(this.container.id + '-item-' + i);
+        if (el) el.className = 'picker-item' + (i === this.selectedIndex ? ' active' : '');
+      }
+    };
+    ScrollColumn.prototype.getValue = function() { return this.data[this.selectedIndex]; };
+
+    function createArray(start, end, pad) {
+      var arr = [];
+      for (var i = start; i <= end; i++) { arr.push(pad && i < 10 ? '0' + i : i.toString()); }
+      return arr;
+    }
+
+    var col1 = new ScrollColumn('col-1');
+    var col2 = new ScrollColumn('col-2');
+    var col3 = new ScrollColumn('col-3');
+    var pickerOverlay = document.getElementById('picker-overlay');
+    var btnDisable    = document.getElementById('picker-disable');
+    var pHeaders      = document.getElementById('picker-headers');
+    var pSep1         = document.getElementById('sep-1');
+    var pSep2         = document.getElementById('sep-2');
+
+    function padZero(num) { var s = num.toString(); return s.length < 2 ? '0' + s : s; }
+    function convertTo24(h12, min, ampm) {
+      var h = parseInt(h12, 10);
+      if (ampm === 'PM' && h < 12) h += 12;
+      if (ampm === 'AM' && h === 12) h = 0;
+      return padZero(h) + ':' + padZero(parseInt(min, 10));
+    }
+
+    /* ==========================================
+       ALARMA — ORIGINAL
+       ========================================== */
+    var alarmTime = null;
+    var isAlarmRinging = false;
+    var btnAlarm   = document.getElementById('btn-alarm');
+    var alarmText  = document.getElementById('alarm-text');
+    var alarmDisplayStr = '';
+
+    btnAlarm.addEventListener('click', function() {
+      if (isAlarmRinging) {
+        isAlarmRinging = false; audioPlayer.pause(); audioPlayer.currentTime = 0;
+        btnAlarm.className = 'action-card active-border'; alarmText.innerHTML = alarmDisplayStr; return;
+      }
+      document.getElementById('picker-title').innerText = 'Alarma';
+      pHeaders.style.display = 'none';
+      pSep1.style.display = 'block'; pSep2.style.display = 'none';
+      var defH = 7, defM = 15, defA = 1;
+      if (alarmTime) {
+        var parts = alarmTime.split(':'); var h24 = parseInt(parts[0], 10); defM = parseInt(parts[1], 10);
+        if (h24 >= 12) { defA = 1; defH = (h24 === 12 ? 12 : h24 - 12) - 1; }
+        else { defA = 0; defH = (h24 === 0 ? 12 : h24) - 1; }
+        btnDisable.style.display = 'block';
+      } else { btnDisable.style.display = 'none'; }
+      col1.load(createArray(1, 12, false), defH);
+      col2.load(createArray(0, 59, true), defM);
+      col3.load(['AM', 'PM'], defA);
+      pickerOverlay.style.display = '-webkit-flex'; pickerOverlay.style.display = 'flex';
+      document.getElementById('picker-btn-ok').onclick = function() {
+        pickerOverlay.style.display = 'none';
+        var h12 = col1.getValue(); var min = col2.getValue(); var ampm = col3.getValue();
+        alarmTime = convertTo24(h12, min, ampm);
+        alarmDisplayStr = h12 + ':' + min + ' ' + ampm;
+        alarmText.innerHTML = alarmDisplayStr;
+        btnAlarm.className = 'action-card active-border';
+      };
+      document.getElementById('picker-btn-cancel').onclick = function() { pickerOverlay.style.display = 'none'; };
+      btnDisable.onclick = function() {
+        pickerOverlay.style.display = 'none'; alarmTime = null; alarmText.innerHTML = 'Inactivo'; btnAlarm.className = 'action-card';
+      };
+    });
+
+    /* ==========================================
+       TEMPORIZADOR — ORIGINAL
+       ========================================== */
+    var timerInterval = null; var timerSeconds = 0; var isTimerRinging = false;
+    var btnTimer  = document.getElementById('btn-timer');
+    var timerText = document.getElementById('timer-text');
+
+    btnTimer.addEventListener('click', function() {
+      if (isTimerRinging) {
+        isTimerRinging = false; audioPlayer.pause(); audioPlayer.currentTime = 0;
+        btnTimer.className = 'action-card'; timerText.innerHTML = 'Inactivo'; return;
+      }
+      if (timerInterval) {
+        clearInterval(timerInterval); timerInterval = null;
+        btnTimer.className = 'action-card'; timerText.innerHTML = 'Inactivo'; return;
+      }
+      document.getElementById('picker-title').innerText = 'Temporizador';
+      btnDisable.style.display = 'none';
+      pHeaders.style.display = '-webkit-flex'; pHeaders.style.display = 'flex';
+      pSep1.style.display = 'block'; pSep2.style.display = 'block';
+      col1.load(createArray(0, 23, true), 0); col2.load(createArray(0, 59, true), 15); col3.load(createArray(0, 59, true), 0);
+      pickerOverlay.style.display = '-webkit-flex'; pickerOverlay.style.display = 'flex';
+      document.getElementById('picker-btn-ok').onclick = function() {
+        pickerOverlay.style.display = 'none';
+        var h = parseInt(col1.getValue(), 10); var m = parseInt(col2.getValue(), 10); var s = parseInt(col3.getValue(), 10);
+        timerSeconds = (h * 3600) + (m * 60) + s;
+        if (timerSeconds > 0) {
+          btnTimer.className = 'action-card timer-border'; updateTimerText();
+          timerInterval = setInterval(function() {
+            timerSeconds--; updateTimerText();
+            if (timerSeconds <= 0) {
+              clearInterval(timerInterval); timerInterval = null; isTimerRinging = true;
+              btnTimer.className = 'action-card alert-bg'; timerText.innerHTML = '\u00a1TIEMPO!'; audioPlayer.play();
+            }
+          }, 1000);
+        }
+      };
+      document.getElementById('picker-btn-cancel').onclick = function() { pickerOverlay.style.display = 'none'; };
+    });
+
+    function updateTimerText() {
+      var h = Math.floor(timerSeconds / 3600); var m = Math.floor((timerSeconds % 3600) / 60); var s = timerSeconds % 60;
+      timerText.innerHTML = h > 0 ? padZero(h) + ':' + padZero(m) + ':' + padZero(s) : padZero(m) + ':' + padZero(s);
+    }
+
+    /* ==========================================
+       CRONÓMETRO — ORIGINAL
+       ========================================== */
+    var swInterval = null; var swStartTime = 0; var swElapsed = 0; var isSwRunning = false;
+    var btnStopwatch = document.getElementById('btn-stopwatch');
+    var swText   = document.getElementById('stopwatch-text');
+    var swNeedle = document.getElementById('sw-needle');
+    var swClickCount = 0; var swClickTimer = null;
+
+    btnStopwatch.addEventListener('click', function() {
+      swClickCount++;
+      if (swClickCount === 1) {
+        swClickTimer = setTimeout(function() {
+          if (isSwRunning) {
+            isSwRunning = false; clearInterval(swInterval);
+            btnStopwatch.className = 'action-card active-border';
+          } else {
+            isSwRunning = true; swStartTime = Date.now() - swElapsed;
+            swInterval = setInterval(updateStopwatch, 20);
+            btnStopwatch.className = 'action-card timer-border';
+          }
+          swClickCount = 0;
+        }, 250);
+      } else if (swClickCount === 2) {
+        clearTimeout(swClickTimer); swClickCount = 0;
+        isSwRunning = false; clearInterval(swInterval); swElapsed = 0;
+        swText.innerHTML = '00:00.00';
+        swNeedle.setAttribute('transform', 'rotate(0 50 50)');
+        btnStopwatch.className = 'action-card';
+      }
+    });
+
+    function updateStopwatch() {
+      swElapsed = Date.now() - swStartTime;
+      var d = new Date(swElapsed);
+      var m = padZero(d.getUTCMinutes()); var s = padZero(d.getUTCSeconds());
+      var ms = padZero(Math.floor(d.getUTCMilliseconds() / 10));
+      swText.innerHTML = m + ':' + s + '.' + ms;
+      swNeedle.setAttribute('transform', 'rotate(' + ((swElapsed / 60000) * 360) + ' 50 50)');
+    }
+
+    /* ==========================================
+       RELOJ FLIP — ORIGINAL
+       ========================================== */
+    function FlipModule(cardId, prefix) {
+      this.card      = document.getElementById(cardId);
+      this.baseClass = (this.card && this.card.className) ? this.card.className.replace(/\bflipping\b/g, '').trim() : 'flip-card';
+      this.staticTop = document.getElementById(prefix + '-static-top');
+      this.staticBot = document.getElementById(prefix + '-static-bot');
+      this.flipTop   = document.getElementById(prefix + '-flip-top');
+      this.flipBot   = document.getElementById(prefix + '-flip-bot');
+      this.currentValue = null;
+    }
+    FlipModule.prototype.update = function(nextValue) {
+      if (!this.card) return;
+      if (!this.baseClass) {
+        this.baseClass = (this.card.className || '').replace(/\bflipping\b/g, '').trim() || 'flip-card';
+      }
+      if (this.currentValue === null) {
+        this.currentValue = nextValue;
+        if (this.staticTop) this.staticTop.innerHTML = nextValue;
+        if (this.staticBot) this.staticBot.innerHTML = nextValue;
+        if (this.flipTop)   this.flipTop.innerHTML   = nextValue;
+        if (this.flipBot)   this.flipBot.innerHTML   = nextValue;
+        return;
+      }
+      if (this.currentValue === nextValue) return;
+      var oldValue = this.currentValue;
+      this.currentValue = nextValue;
+      // Usar baseClass para NO perder 'fs-flip-card' ni otras clases extra al reiniciar
+      this.card.className = this.baseClass;
+      void this.card.offsetWidth;
+      if (this.staticTop) this.staticTop.innerHTML = nextValue;
+      if (this.staticBot) this.staticBot.innerHTML = oldValue;
+      if (this.flipTop)   this.flipTop.innerHTML   = oldValue;
+      if (this.flipBot)   this.flipBot.innerHTML   = nextValue;
+      this.card.className = this.baseClass + ' flipping';
+    };
+
+    var hoursModule = new FlipModule('card-hours', 'hours');
+    var minsModule  = new FlipModule('card-minutes', 'mins');
+    var secsModule  = new FlipModule('card-seconds', 'secs');
+
+    function tick() {
+      var now = new Date();
+      var h = padZero(now.getHours()); var m = padZero(now.getMinutes()); var s = padZero(now.getSeconds());
+      hoursModule.update(h); minsModule.update(m); secsModule.update(s);
+      // Disparar alarma
+      if (alarmTime && !isAlarmRinging && alarmTime === (h + ':' + m) && s === '00') {
+        isAlarmRinging = true; btnAlarm.className = 'action-card alert-bg';
+        alarmText.innerHTML = '\u00a1DESPIERTA!'; audioPlayer.play();
+      }
+      // Alimentar módulos flip en pantalla completa (si el overlay de reloj está abierto)
+      if (currentWidgetType === 'clock' && fsHoursModule && fsMinsModule && fsSecsModule) {
+        fsHoursModule.update(h);
+        fsMinsModule.update(m);
+        fsSecsModule.update(s);
+      }
+    }
+    setInterval(tick, 1000);
+    tick();
+
+    /* ==========================================
+       CALENDARIO — ORIGINAL
+       ========================================== */
+    function renderCalendar(month, year) {
+      document.getElementById('month-label').innerHTML = '<span>\uD83D\uDCC5 ' + monthNames[month] + ' ' + year + '</span>';
+      var firstDay = new Date(year, month, 1).getDay();
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var daysInPrevMonth = new Date(year, month, 0).getDate();
+      var html = '';
+      for (var i = 0; i < 42; i++) {
+        if (i < firstDay) {
+          html += '<div class="day muted"><div class="day-inner">' + (daysInPrevMonth - firstDay + i + 1) + '</div></div>';
+        } else if (i < firstDay + daysInMonth) {
+          var d = i - firstDay + 1;
+          var isTd = (d === currentDate.getDate() && month === currentDate.getMonth() && year === currentDate.getFullYear());
+          html += '<div class="day' + (isTd ? ' today' : '') + '"><div class="day-inner">' + d + '</div></div>';
+        } else {
+          html += '<div class="day muted"><div class="day-inner">' + (i - (firstDay + daysInMonth) + 1) + '</div></div>';
+        }
+      }
+      document.getElementById('calendar-grid').innerHTML = html;
+    }
+
+    document.getElementById('prev-month').addEventListener('click', function(e) {
+      e.stopPropagation();
+      displayMonth--; if (displayMonth < 0) { displayMonth = 11; displayYear--; }
+      renderCalendar(displayMonth, displayYear);
+    });
+    document.getElementById('next-month').addEventListener('click', function(e) {
+      e.stopPropagation();
+      displayMonth++; if (displayMonth > 11) { displayMonth = 0; displayYear++; }
+      renderCalendar(displayMonth, displayYear);
+    });
+    renderCalendar(displayMonth, displayYear);
+
+  </script>
+</body>
+</html>
