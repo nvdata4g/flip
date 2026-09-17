@@ -131,6 +131,103 @@
     }
     .picker-footer button:first-child { border-right: 1px solid rgba(255,255,255,0.08); }
     .picker-footer button svg { width: 30px; height: 30px; stroke: #f5f3f7; }
+
+    /* =========================================
+       NUEVO CÓDIGO CSS - DISEÑO RESPONSIVO 
+       ========================================= */
+    
+    @media screen and (max-width: 1024px) {
+      /* Permitir scroll en pantallas más pequeñas donde el contenido no cabe de alto */
+      html, body { overflow-y: auto; overflow-x: hidden; }
+      
+      .tablet-screen {
+        position: relative;
+        flex-direction: column;
+        -webkit-flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      
+      /* Las columnas ahora ocupan el 100% del ancho y se apilan */
+      .left-column {
+        width: 100%;
+        height: auto;
+        margin-right: 0;
+        margin-bottom: 24px;
+      }
+      
+      .right-column {
+        width: 100%;
+        height: auto;
+      }
+      
+      /* Ajustar la galería para que mantenga su proporción */
+      .gallery-container {
+        min-height: 350px;
+        flex: none;
+        -webkit-flex: none;
+      }
+      
+      .clock-container {
+        min-height: 300px;
+      }
+      
+      .calendar-container {
+        min-height: 400px;
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      /* En móviles y pantallas pequeñas apilamos o ajustamos las tarjetas de acciones */
+      .actions-grid {
+        height: auto;
+        flex-direction: column;
+        -webkit-flex-direction: column;
+        gap: 16px;
+      }
+      
+      .action-card {
+        width: 100%;
+        padding: 20px 10px;
+      }
+      
+      /* Reducción del tamaño del reloj para que encaje en el ancho móvil */
+      .flip-card {
+        height: 160px;
+      }
+      
+      .digit {
+        font-size: 70px;
+      }
+      
+      .static-top, .flip-top {
+        line-height: 160px;
+      }
+      
+      .clock-dots {
+        font-size: 36px;
+      }
+      
+      /* Reducción de la rueda del cronómetro para móviles */
+      #btn-stopwatch > div {
+        width: 120px !important;
+        height: 120px !important;
+      }
+      
+      #stopwatch-text {
+        font-size: 22px !important;
+      }
+      
+      /* Reducción de los textos del calendario */
+      .calendar-container {
+        padding: 10px 15px;
+      }
+      .day { font-size: 20px; }
+      .day-inner { width: 36px; height: 36px; }
+      .month-label { font-size: 20px; }
+      .calendar-weekdays span { font-size: 15px; }
+    }
   </style>
 </head>
 <body>
@@ -173,20 +270,18 @@
       <div class="actions-grid">
         <!-- 1. ALARMA -->
         <div class="action-card" id="btn-alarm">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 8px;">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 8px;">
             <circle cx="12" cy="13" r="8"></circle><polyline points="12 9 12 13 14 15"></polyline><path d="M5 3 2 6"></path><path d="M19 3l3 3"></path>
           </svg>
-          <span>Alarma</span>
-          <small id="alarm-text">Inactiva</small>
+          <small id="alarm-text">OFF</small>
         </div>
         
         <!-- 2. TEMPORIZADOR -->
         <div class="action-card" id="btn-timer">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 8px;">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 8px;">
             <circle cx="12" cy="14" r="8"></circle><polyline points="12 10 12 14 15 14"></polyline><line x1="10" y1="2" x2="14" y2="2"></line><line x1="12" y1="2" x2="12" y2="6"></line>
           </svg>
-          <span>Timer</span>
-          <small id="timer-text">Inactivo</small>
+          <small id="timer-text">OFF</small>
         </div>
 
         <!-- 3. CRONÓMETRO (AMPLIADO Y SIN TEXTOS EXTRA) -->
