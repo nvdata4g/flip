@@ -231,7 +231,7 @@
     .picker-footer button svg { width: 30px; height: 30px; stroke: #f5f3f7; }
 
     /* =========================================
-       ENGRANAJE DE CONFIGURACIÓN
+       BOTÓN DE MENÚ (Configuración)
        ========================================= */
     .settings-gear-btn {
       position: fixed; top: 14px; right: 14px; z-index: 9100;
@@ -241,7 +241,7 @@
     }
     .settings-gear-btn.open { opacity: 0.9; }
     .settings-gear-btn:active { opacity: 0.9; }
-    .settings-gear-btn svg { width: 30px; height: 30px; fill: #f5f3f7; display: block; }
+    .settings-gear-btn svg { width: 60px; height: 60px; display: block; }
 
     /* =========================================
        PANEL DE CONFIGURACIÓN
@@ -557,13 +557,14 @@
   <input type="file" id="audio-picker" accept="audio/*" style="display:none;">
 
   <!-- ========================
-       ENGRANAJE DE CONFIGURACIÓN (fixed, esquina superior derecha)
+       BOTÓN DE MENÚ (fixed, esquina superior derecha)
        ======================== -->
   <button class="settings-gear-btn" id="settings-gear-btn" onclick="toggleSettings(event)">
-    <!-- Ícono SVG de engranaje (gear / cog) -->
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+    <!-- Ícono SVG de Menú (Hamburguesa) -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="#f5f3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
     </svg>
   </button>
 
