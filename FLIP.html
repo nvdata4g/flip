@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Android Flip Clock Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    :root {
+      --bg-chassis: #0e0d11;
+      --bg-panel: #18151f;
+      --card-bg: #231f2c;
+      --card-highlight: #2f2a3a;
+      --text-main: #f5f3f7;
+      --text-dim: #8e889a;
+      --accent-teal: #22c55e;
+      --accent-alarm: #38bdf8;
+      --flip-bg: #2a2536;
+      --flip-text: #f3eee3;
+      --radius-screen: 36px;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: #070609;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .tablet-screen {
+      width: 1060px;
+      height: 640px;
+      background: var(--bg-panel);
+      border-radius: var(--radius-screen);
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 22px;
+      padding: 28px 24px 22px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+
+    .status-bar {
+      position: absolute;
+      top: 10px;
+      left: 32px;
+      right: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+    }
+
+    .status-bar .icons {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* ===================================================
+       PANEL IZQUIERDO: Galería + Alarma/Temporizador
+       =================================================== */
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+    }
+
+    .gallery-container {
+      flex: 1;
+      border-radius: var(--radius-lg);
+      background: var(--card-bg);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    }
+
+    .gallery-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: scale(1.04);
+      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.5s ease-out;
+    }
+
+    .gallery-slide.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .gallery-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .gallery-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 50%, rgba(14, 13, 17, 0.85) 100%);
+      display: flex;
+      align-items: flex-end;
+      padding: 16px 20px;
+      justify-content: space-between;
+    }
+
+    .gallery-caption h4 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .gallery-caption p {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .gallery-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .gallery-dots span {
+      width: 6px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .gallery-dots span.active {
+      width: 18px;
+      border-radius: 6px;
+      background: var(--text-main);
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      height: 105px;
+    }
+
+    .action-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, border-color 0.2s;
+    }
+
+    .action-card:hover {
+      background: var(--card-highlight);
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .action-card:active {
+      transform: scale(0.97);
+    }
+
+    .action-card i {
+      font-size: 26px;
+      color: var(--accent-alarm);
+    }
+
+    .action-card.timer i {
+      color: #a78bfa;
+    }
+
+    .action-card span {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .action-card small {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: -4px;
+    }
+
+    /* ===================================================
+       PANEL DERECHO: Reloj Flip 40% + Calendario Compacto
+       =================================================== */
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      height: 100%;
+    }
+
+    .clock-container {
+      height: 40%;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      padding: 16px 20px;
+    }
+
+    .flip-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 175px;
+      height: 100%;
+    }
+
+    /* ESTRUCTURA FLIP 3D CORREGIDA (Clip-Path) */
+    .flip-card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      perspective: 1000px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 14px 28px rgba(0,0,0,0.6);
+      background: #191621;
+    }
+
+    .flip-card::before, .flip-card::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 18px;
+      background: #474052;
+      border-radius: 2px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 15;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .flip-card::before { left: -3px; }
+    .flip-card::after { right: -3px; }
+
+    .hinge-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 2px;
+      background: #0f0d14;
+      z-index: 12;
+      transform: translateY(-50%);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    /* Las capas del dígito ocupan el 100% del alto, pero se recortan visualmente */
+    .digit {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 86px;
+      font-weight: 700;
+      color: var(--flip-text);
+      background: linear-gradient(180deg, #322d3f 0%, #1c1824 100%);
+      border-radius: var(--radius-md);
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
+    }
+
+    /* clip-path: inset(Arriba Derecha Abajo Izquierda) */
+    .static-top, .flip-top { clip-path: inset(0 0 50% 0); }
+    .static-bot, .flip-bot { clip-path: inset(50% 0 0 0); }
+
+    .static-top { z-index: 1; }
+    .static-bot { z-index: 1; }
+    
+    .flip-top { 
+      z-index: 2; 
+      transform-origin: center; 
+    }
+    
+    .flip-bot { 
+      z-index: 2; 
+      transform-origin: center; 
+      transform: rotateX(90deg); /* Empieza oculto doblado hacia adelante */
+    }
+
+    /* Animaciones */
+    .flipping .flip-top {
+      animation: flipTopAnim 0.25s ease-in forwards;
+    }
+    .flipping .flip-bot {
+      animation: flipBotAnim 0.25s ease-out 0.25s forwards;
+    }
+
+    @keyframes flipTopAnim {
+      0% { transform: rotateX(0deg); filter: brightness(1); }
+      100% { transform: rotateX(-90deg); filter: brightness(0.5); }
+    }
+    @keyframes flipBotAnim {
+      0% { transform: rotateX(90deg); filter: brightness(1.5); }
+      100% { transform: rotateX(0deg); filter: brightness(1); }
+    }
+
+    .clock-dots {
+      font-size: 42px;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.2);
+      margin-top: -10px;
+    }
+
+    .flip-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    /* ===================================================
+       CALENDARIO COMPACTO CON MES EN EL BORDE INFERIOR
+       =================================================== */
+    .calendar-container {
+      flex: 1;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 14px 22px 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .calendar-weekdays span {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-alarm);
+      letter-spacing: 0.5px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 4px 6px;
+      flex: 1;
+      align-items: center;
+      padding: 6px 0;
+    }
+
+    .day {
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-main);
+      border-radius: var(--radius-sm);
+    }
+
+    .day.muted {
+      color: rgba(255, 255, 255, 0.15);
+    }
+
+    .day.today {
+      background: var(--accent-alarm);
+      color: #0c1c28;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
+    }
+
+    .calendar-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .month-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .month-label i {
+      font-size: 11px;
+      color: var(--accent-alarm);
+    }
+
+    .calendar-nav-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 11px;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+
+    .nav-btn:hover {
+      color: var(--text-main);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tablet-screen">
+    <div class="status-bar">
+      <span>01:30</span>
+      <div class="icons">
+        <i class="fa-solid fa-wifi"></i>
+        <i class="fa-solid fa-bell"></i>
+        <i class="fa-solid fa-battery-full"></i>
+      </div>
+    </div>
+
+    <!-- COLUMNA IZQUIERDA -->
+    <div class="left-column">
+      <div class="gallery-container">
+        <div class="gallery-slide active">
+          <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=700&q=80" alt="Paisaje montañas">
+          <div class="gallery-overlay">
+            <div class="gallery-caption">
+              <h4>Montañas Rocosas</h4>
+              <p>Álbum: Vacaciones</p>
+            </div>
+            <div class="gallery-dots"><span class="active"></span><span></span><span></span></div>
+          </div>
+        </div>
+        <div class="gallery-slide">
+          <img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=700&q=80" alt="Familia">
+          <div class="gallery-overlay">
+            <div class="gallery-caption">
+              <h4>Parque en Familia</h4>
+              <p>Álbum: Recuerdos</p>
+            </div>
+            <div class="gallery-dots"><span></span><span class="active"></span><span></span></div>
+          </div>
+        </div>
+        <div class="gallery-slide">
+          <img src="https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=700&q=80" alt="Ciudad atardecer">
+          <div class="gallery-overlay">
+            <div class="gallery-caption">
+              <h4>Atardecer Dorado</h4>
+              <p>Álbum: Viajes</p>
+            </div>
+            <div class="gallery-dots"><span></span><span></span><span class="active"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions-grid">
+        <div class="action-card" id="btn-alarm">
+          <i class="fa-regular fa-clock"></i>
+          <span>Alarma</span>
+          <small>06:45 AM • Activa</small>
+        </div>
+        <div class="action-card timer" id="btn-timer">
+          <i class="fa-solid fa-stopwatch"></i>
+          <span>Temporizador</span>
+          <small>15:00 min</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA -->
+    <div class="right-column">
+      
+      <!-- RELOJ FLIP (Corregido para no duplicar números) -->
+      <div class="clock-container">
+        <div class="flip-group">
+          <div class="flip-card" id="card-hours">
+            <div class="hinge-line"></div>
+            <div class="digit static-bot" id="hours-static-bot">01</div>
+            <div class="digit static-top" id="hours-static-top">01</div>
+            <div class="digit flip-bot" id="hours-flip-bot">01</div>
+            <div class="digit flip-top" id="hours-flip-top">01</div>
+          </div>
+          <span class="flip-label">Horas</span>
+        </div>
+
+        <span class="clock-dots">:</span>
+
+        <div class="flip-group">
+          <div class="flip-card" id="card-minutes">
+            <div class="hinge-line"></div>
+            <div class="digit static-bot" id="mins-static-bot">30</div>
+            <div class="digit static-top" id="mins-static-top">30</div>
+            <div class="digit flip-bot" id="mins-flip-bot">30</div>
+            <div class="digit flip-top" id="mins-flip-top">30</div>
+          </div>
+          <span class="flip-label">Minutos</span>
+        </div>
+
+        <span class="clock-dots">:</span>
+
+        <div class="flip-group">
+          <div class="flip-card" id="card-seconds">
+            <div class="hinge-line"></div>
+            <div class="digit static-bot" id="secs-static-bot">40</div>
+            <div class="digit static-top" id="secs-static-top">40</div>
+            <div class="digit flip-bot" id="secs-flip-bot">40</div>
+            <div class="digit flip-top" id="secs-flip-top">40</div>
+          </div>
+          <span class="flip-label">Segundos</span>
+        </div>
+      </div>
+
+      <!-- CALENDARIO -->
+      <div class="calendar-container">
+        <div class="calendar-weekdays">
+          <span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span>
+        </div>
+        <div class="calendar-grid">
+          <div class="day muted">31</div><div class="day">1</div><div class="day">2</div><div class="day">3</div><div class="day">4</div><div class="day">5</div><div class="day">6</div>
+          <div class="day">7</div><div class="day">8</div><div class="day">9</div><div class="day">10</div><div class="day">11</div><div class="day">12</div><div class="day">13</div>
+          <div class="day">14</div><div class="day">15</div><div class="day today">16</div><div class="day">17</div><div class="day">18</div><div class="day">19</div><div class="day">20</div>
+          <div class="day">21</div><div class="day">22</div><div class="day">23</div><div class="day">24</div><div class="day">25</div><div class="day">26</div><div class="day">27</div>
+          <div class="day">28</div><div class="day">29</div><div class="day">30</div><div class="day muted">1</div><div class="day muted">2</div><div class="day muted">3</div><div class="day muted">4</div>
+        </div>
+        <div class="calendar-footer">
+          <div class="month-label">
+            <i class="fa-regular fa-calendar"></i>
+            <span>Septiembre</span>
+          </div>
+          <div class="calendar-nav-buttons">
+            <button class="nav-btn"><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="nav-btn"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    class FlipModule {
+      constructor(cardId, prefix) {
+        this.card = document.getElementById(cardId);
+        this.staticTop = document.getElementById(`${prefix}-static-top`);
+        this.staticBot = document.getElementById(`${prefix}-static-bot`);
+        this.flipTop = document.getElementById(`${prefix}-flip-top`);
+        this.flipBot = document.getElementById(`${prefix}-flip-bot`);
+        this.currentValue = null;
+      }
+
+      update(nextValue) {
+        if (this.currentValue === null) {
+          this.currentValue = nextValue;
+          this.staticTop.textContent = nextValue;
+          this.staticBot.textContent = nextValue;
+          this.flipTop.textContent = nextValue;
+          this.flipBot.textContent = nextValue;
+          return;
+        }
+
+        if (this.currentValue === nextValue) return;
+
+        const oldValue = this.currentValue;
+        this.currentValue = nextValue;
+
+        // Reiniciar estado
+        this.card.classList.remove('flipping');
+        void this.card.offsetWidth; // Forzar reflow
+
+        // Preparar las capas para la animación de caída:
+        // Top estático ya tiene el NUEVO valor (esperando ser revelado)
+        this.staticTop.textContent = nextValue;
+        // Bottom estático tiene el VIEJO valor (sigue mostrándose hasta ser cubierto)
+        this.staticBot.textContent = oldValue;
+        // Top flip tiene el VIEJO valor (es lo que estamos viendo y va a caer)
+        this.flipTop.textContent = oldValue;
+        // Bot flip tiene el NUEVO valor (es lo que cae y cubre el viejo bottom)
+        this.flipBot.textContent = nextValue;
+
+        // Iniciar animación (toma 0.5s en total)
+        this.card.classList.add('flipping');
+      }
+    }
+
+    const hoursModule = new FlipModule('card-hours', 'hours');
+    const minsModule = new FlipModule('card-minutes', 'mins');
+    const secsModule = new FlipModule('card-seconds', 'secs');
+
+    function tick() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+
+      hoursModule.update(h);
+      minsModule.update(m);
+      secsModule.update(s);
+    }
+
+    setInterval(tick, 1000);
+    tick();
+
+    // Galería
+    const slides = document.querySelectorAll('.gallery-slide');
+    let activeSlideIndex = 0;
+    setInterval(() => {
+      slides[activeSlideIndex].classList.remove('active');
+      activeSlideIndex = (activeSlideIndex + 1) % slides.length;
+      slides[activeSlideIndex].classList.add('active');
+    }, 5000);
+  </script>
+</body>
+</html>
